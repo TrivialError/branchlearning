@@ -3,32 +3,41 @@ import networkx as nx
 import queue
 import math
 import drawsolution
+import time
 
 # TODO: check if it's actually working
 
-# lp_initializer should generate a gurobi model and variable objects in a tupledict given a graph
+# lp_initializer should generate a gurobi model and variable (index, names) in a tupledict given a graph
 # branch_rule should take in the graph and an assignment to the variables and a gurobi model
-#   and return a variable to branch on
-# items in queue have format (LPvalue, ({vars tupledict}, [branch_values]))
-# init_soln is of the form (solution_obj_value, {vars tupledict})
+#   and return a variable (index, name) to branch on
+# items in queue have format (LPvalue, queue#, {varindex: (varname, varvalue) tupledict for branches},
+#                                              {varindex: (varname, varvalue) tupledict for LP solution})
+# init_soln/best_soln are of the form (solution_obj_value, {varindex: (varname, varvalue) tupledict})
 # cutting_planes should take the graph and lp solution and return constraints as [(LinExpr, rhs)]
-# TODO: simplify stuff a bit by not passing actual variable objects around; just use a tupledict with the
-#   edge index as keys and the name as values; then get the variable from the relevant model as needed
+# TODO move branch rule function into class
 
 
 class BranchAndBound:
 
-    def __init__(self, branch_rule, lp_initializer, graph, init_soln=(math.inf, ([], []))):
+    def __init__(self, branch_rule, lp_initializer, graph, init_soln=(math.inf, grb.tupledict())):
         self.branch_rule = branch_rule
-        self.lp, self.x = lp_initializer(graph)
+        self.lp, self.var_dict = lp_initializer(graph)
         self.lp.params.outputflag = 0
         self.graph = graph
         self.queue = queue.PriorityQueue()
+        self.num_branch_nodes = 0
 
         self.best_soln = init_soln
 
     def solve(self, draw=False):
-        self.queue.put((math.inf, ([], [])))
+        print("Running Branch and Bound")
+
+        self.lp.optimize()
+        lp_soln = grb.tupledict([(index, (var_name, self.lp.getVarByName(var_name).X))
+                                 for index, var_name in self.var_dict.items()])
+
+        self.num_branch_nodes += 1
+        self.queue.put((self.lp.objVal, self.num_branch_nodes, grb.tupledict(), lp_soln))
 
         while not self.queue.empty():
             self.branch_step(draw)
@@ -37,22 +46,24 @@ class BranchAndBound:
 
     def branch_step(self, draw=False):
         model_copy = self.lp.copy()
-        branches = self.queue.get()[1]
-        for (i, var) in enumerate(branches[0]):
-            print("var: ", var)
-            model_var = model_copy.getVarByName(var.VarName)
-            model_copy.addConstr(model_var, grb.GRB.EQUAL, branches[1][i])
-        model_copy.optimize()  # TODO: should actually get this from the queue
+        queue_node = self.queue.get()
+        lp_value = queue_node[0]
+        # print("lp_value compared to best so far: ", lp_value, self.best_soln[0])
+        if lp_value > self.best_soln[0]:
+            return
+        print("processing branch node: ", queue_node[1])
+        branches = queue_node[2]
+        soln = queue_node[3]
+        for index, var in branches.items():
+            model_var = model_copy.getVarByName(var[0])
+            model_copy.addConstr(model_var, grb.GRB.EQUAL, var[1])
 
         if draw:
-            edge_solution = grb.tupledict([(index, model_copy.getVarByName(self.x[index].VarName).X)
-                                           for index in self.x.keys()])
+            edge_solution = grb.tupledict([(index, soln[index][1]) for index in soln.keys()])
             drawsolution.draw(self.graph, edge_solution)
 
-        soln = {index: model_copy.getVarByName(self.x[index].VarName) for index in self.x.keys()}
-        print("soln: ", soln)
         branch_var = self.branch_rule(model_copy, self.graph, soln)
-        print(branch_var)
+        print("branch_var: ", branch_var)
 
         if branch_var is None:
             return
@@ -60,34 +71,54 @@ class BranchAndBound:
         lp0 = model_copy.copy()
         lp1 = model_copy.copy()
 
-        var0 = lp0.getVarByName(branch_var.VarName)
+        var0 = lp0.getVarByName(branch_var[1])
         lp0.addConstr(var0, grb.GRB.EQUAL, 0)
-        branches0 = (branches[0] + [self.lp.getVarByName(branch_var.VarName)], branches[1] + [0])
+        branches0 = branches
+        branches0[branch_var[0]] = (branch_var[1], 0)
 
-        var1 = lp1.getVarByName(branch_var.VarName)
+        var1 = lp1.getVarByName(branch_var[1])
         lp1.addConstr(var1, grb.GRB.EQUAL, 1)
-        branches1 = (branches[0] + [self.lp.getVarByName(branch_var.VarName)], branches[1] + [1])
+        branches1 = branches
+        branches1[branch_var[0]] = (branch_var[1], 1)
 
         # TODO: add getting new cutting planes. Also will have to get LP solution value from external function to not
         #   waste computation
 
+        a = time.clock()
         lp0.optimize()
         lp1.optimize()
+        print("Time to solve new LPs: ", time.clock() - a)
+        print("new lp objective values: ", lp0.objVal, lp1.objVal)
 
         x_vars0 = lp0.getVars()
         x_vars1 = lp1.getVars()
 
+        lp0_soln = grb.tupledict([(index, (var_name, lp0.getVarByName(var_name).X))
+                                  for index, var_name in self.var_dict.items()])
+        lp1_soln = grb.tupledict([(index, (var_name, lp1.getVarByName(var_name).X))
+                                  for index, var_name in self.var_dict.items()])
+
         if all([x.X % 1 == 0 for x in x_vars0]) and lp0.objVal < self.best_soln[0]:
-            self.best_soln = (lp0.objVal, grb.tupledict([(index, lp0.getVarByName(self.x[index].VarName))
-                                                         for index in self.x.keys()]))
+            self.best_soln = (lp0.objVal, lp0_soln)
+            print("Updated best solution to: ", lp0.objVal)
+            # print([(index, var[1]) for index, var in lp0_soln.items() if var[1] != 0])
         elif lp0.objVal < self.best_soln[0]:
-            self.queue.put((lp0.objVal, branches0))
+            self.num_branch_nodes += 1
+            print("adding branch node: ", self.num_branch_nodes)
+            self.queue.put((lp0.objVal, self.num_branch_nodes, branches0, lp0_soln))
+        else:
+            print("Discarding solution; obj value compared to best solution: ", lp0.objVal, self.best_soln[0])
 
         if all([x.X % 1 == 0 for x in x_vars1]) and lp1.objVal < self.best_soln[0]:
-            self.best_soln = (lp1.objVal, grb.tupledict([(index, lp1.getVarByName(self.x[index].VarName))
-                                                         for index in self.x.keys()]))
+            self.best_soln = (lp1.objVal, lp1_soln)
+            print("Updated best solution to: ", lp1.objVal)
+            # print([(index, var[1]) for index, var in lp1_soln.items() if var[1] != 0])
         elif lp1.objVal < self.best_soln[0]:
-            self.queue.put((lp1.objVal, branches1))
+            self.num_branch_nodes += 1
+            print("adding branch node: ", self.num_branch_nodes)
+            self.queue.put((lp1.objVal, self.num_branch_nodes, branches1, lp1_soln))
+        else:
+            print("Discarding solution; obj value compared to best solution: ", lp1.objVal, self.best_soln[0])
 
     def dfs_until_solution(self):
         # TODO

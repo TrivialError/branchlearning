@@ -5,17 +5,16 @@ from branchandbound import *
 
 
 def branch_rule(gurobi_model, graph, solution):
-    ret = next((solution[x] for x in solution if 0 < solution[x].X < 1), None)
-    print("ret", ret)
+    ret = next(((index, solution[index][0]) for index in solution.keys() if 0 < solution[index][1] < 1), None)
     return ret
 
 
 def main():
-    graph = nxtools.complete_graph_random_weights(20)
+    graph = nxtools.complete_graph_random_weights(1000)
 
     bnb = BranchAndBound(branch_rule, TSPfunctions.tsp_lp_initializer, graph)
 
-    bnb.solve(True)
+    bnb.solve(draw=False)
 
 
 if __name__ == "__main__":
