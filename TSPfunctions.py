@@ -1,6 +1,7 @@
 import gurobipy as grb
 import networkx as nx
 import nxtools
+import time
 
 
 def tsp_lp_initializer(graph):
@@ -16,9 +17,41 @@ def tsp_lp_initializer(graph):
     return lp, x
 
 
-def tsp_cutting_planes(graph, lp_soln):
-    # TODO
-    pass
+def tsp_cutting_planes(lp, var_dict, graph):
+
+    print("running cutting planes")
+
+    lp.optimize()
+    soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
+
+    # TODO column generation is almost definitely needed. Try to figure out if we have to re-find all the
+    #   cutting planes every time we add edges (answer is probably yes)
+    while True:
+        nx.set_edge_attributes(graph, soln_index, 'capacity')
+        cut_partitions = []
+        for i in range(1, len(graph)):
+            cut_weight, partitions = nx.minimum_cut(graph, 0, i)
+            if cut_weight < 2 - 10**(-12):
+                cut_partitions.append((cut_weight, partitions))
+        if not cut_partitions:
+            break
+        for (cut_value, partitions) in cut_partitions:
+            edge_cut_list = []
+            for p1_node in partitions[0]:
+                for p2_node in partitions[1]:
+                    if graph.has_edge(p1_node, p2_node):
+                        if p1_node > p2_node:
+                            edge_cut_list.append((p2_node, p1_node))
+                        else:
+                            edge_cut_list.append((p1_node, p2_node))
+            edge_cut_vars = grb.tupledict({index: lp.getVarByName(var_dict[index]) for index in edge_cut_list})
+            lp.addConstr(edge_cut_vars.sum() >= 2)
+        a = time.clock()
+        lp.optimize()
+        print("time to solve lp: ", time.clock() - a)
+        soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
+
+    return lp.objVal, grb.tupledict({index: (var_dict[index], val) for index, val in soln_index.items()})
 
 
 def solve_init_lp(graph):
