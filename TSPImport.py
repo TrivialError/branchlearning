@@ -8,7 +8,6 @@ import drawsolution
 #  We use a regex here to clean characters and keep only numerics
 
 cities_set = []
-cities_tups = []
 
 
 #  we open the TSP file and put each line cleaned of spaces
@@ -61,11 +60,10 @@ the coordinates of each city
 def get_cities(list, dimension):
     dimension = int(dimension)
     for item in list:
-        for num in range(1, dimension + 1):
-            if item.startswith(str(num)):
-                index, space, rest = item.partition(' ')
-                if rest not in cities_set:
-                    cities_set.append((index, rest))
+        index, space, rest = item.partition(' ')
+        if index.isdigit():
+            if rest not in cities_set:
+                cities_set.append(rest)
     return cities_set
 
 
@@ -76,17 +74,21 @@ Brake each coordinate 33.00 44.00 to a tuple ('33.00','44.00')
 
 def city_tup(list):
     G = nx.Graph()
-    for item in list:
-        _, first_coord, space, second_coord = item.partition(' ')
+    cities_tups = []
+    cities_tups_indexed = []
+    for i, item in enumerate(list):
+        first_coord, space, second_coord = item.partition(' ')
+        cities_tups_indexed.append((i, (float(first_coord.strip()), float(second_coord.strip()))))
         cities_tups.append((float(first_coord.strip()), float(second_coord.strip())))
     weights = squareform(pdist(cities_tups)).round()
     # print(weights)
     G = nx.from_numpy_matrix(weights)
-    print(nx.info(G))
-    print(nx.nodes(G))
+    print(G.nodes())
+    # print(nx.info(G))
+    # print(nx.nodes(G))
     # G.nodes(data=True)
-    plt.show()
-    return G
+    # plt.show()
+    return G, cities_tups_indexed
 
 
 """
@@ -94,13 +96,14 @@ Putting it all together
 """
 
 
-def produce_final(file="ulysses22.tsp"):
+def produce_final(file="./TSPLIB/ulysses22.tsp"):
     data = read_tsp_data(file)
     dimension = detect_dimension(data)
     cities_set = get_cities(data, dimension)
-    cities_tups = city_tup(cities_set)
-    nx.set_node_attributes(cities_tups, 'pos', dict(cities_set))
-
+    graph, cities_tups_indexed = city_tup(cities_set)
+    print(dict(cities_tups_indexed))
+    nx.set_node_attributes(graph, dict(cities_tups_indexed), 'pos')
+    return graph
 
 if __name__ == '__main__':
     g = produce_final()

@@ -21,11 +21,3 @@ def draw(graph, edge_solution):
     plt.axis('off')
     plt.show()
 
-
-#graph = nxtools.complete_graph_random_weights(100)
-#print("graph generated")
-#_, edge_solution = TSPfunctions.solve_init_lp(graph)
-#print("solved")
-#print(edge_solution)
-#print([(e, edge_solution[e], graph[e[0]][e[1]]['weight']) for e in edge_solution.keys() if edge_solution[e] != 0])
-#draw(graph, edge_solution)

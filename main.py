@@ -9,11 +9,13 @@ def main():
 
     a = time.clock()
     graph = TSPImport.produce_final()
+    print(graph.nodes(data=True))
+    print(graph.edges(data=True))
 
-    bnb = BranchAndBound("strongdata", TSPfunctions.tsp_lp_initializer, graph,
+    bnb = BranchAndBound("strong", TSPfunctions.tsp_lp_initializer, graph,
                          TSPfunctions.tsp_connecting_cutting_planes)
 
-    soln = bnb.solve(draw=True)
+    soln = bnb.solve(draw=False)
 
     print("final objective value: ", soln[0])
     print("time to solve: ", time.clock()-a)
