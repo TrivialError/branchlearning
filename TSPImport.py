@@ -77,13 +77,13 @@ def city_tup(list):
     cities_tups = []
     cities_tups_indexed = []
     for i, item in enumerate(list):
-        first_coord, space, second_coord = item.partition(' ')
+        first_coord, space, second_coord = item.strip().partition(' ')
         cities_tups_indexed.append((i, (float(first_coord.strip()), float(second_coord.strip()))))
         cities_tups.append((float(first_coord.strip()), float(second_coord.strip())))
     weights = squareform(pdist(cities_tups)).round()
     # print(weights)
     G = nx.from_numpy_matrix(weights)
-    print(G.nodes())
+    #print(G.nodes())
     # print(nx.info(G))
     # print(nx.nodes(G))
     # G.nodes(data=True)
@@ -96,12 +96,13 @@ Putting it all together
 """
 
 
-def produce_final(file="./TSPLIB/ulysses22.tsp"):
+def produce_final(file="./TSPLIB/rat99.tsp"):
     data = read_tsp_data(file)
     dimension = detect_dimension(data)
     cities_set = get_cities(data, dimension)
+    #print(cities_set)
+    #print(data)
     graph, cities_tups_indexed = city_tup(cities_set)
-    print(dict(cities_tups_indexed))
     nx.set_node_attributes(graph, dict(cities_tups_indexed), 'pos')
     return graph
 

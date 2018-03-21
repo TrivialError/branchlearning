@@ -138,6 +138,7 @@ class BranchAndBound:
     # TODO add SB data collection
     def strong_branching(self, model, graph, soln_value, data=False):
         frac_vars = [(index, var[0]) for index, var in soln_value[1].items() if 0 < var[1] < 1]
+        print("Number of variables to calculate SB score: ", len(frac_vars))
         obj = soln_value[0]
         sb_scores = {}
         for branch_var in frac_vars:
@@ -156,6 +157,7 @@ class BranchAndBound:
             obj0, lp0_soln = self.node_lower_bound(lp0, self.var_dict, self.graph)
             obj1, lp1_soln = self.node_lower_bound(lp1, self.var_dict, self.graph)
 
+            # TODO change SB scores to 0 or 1 based on percentile
             sb_score = abs(obj - obj0)*abs(obj - obj1)/(obj**2)
             sb_scores[sb_score] = branch_var
 
