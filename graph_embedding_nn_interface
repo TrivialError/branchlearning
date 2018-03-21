@@ -7,7 +7,9 @@ Define:
 It should be an n*n 2-d numpy array s_M, where s_M[a][b] is the fraction of the edge e(a, b) in the solution.
 2. Weight matrix W for all edges.
 It's an n*n 2-d numpy array where W[a][b] is the weight of the edege e(a, b) where a, b is the index of the NO.a and NO.b vertex.
-3. Adjacent Matrix for all vertices
+3. Adjacent Matrix for the graph
 It's an n*n 2-d numpy array where W[a][b] is the indicator for whether vertex a and vertex b are adjacent.
+4. Adjacent Matrix for the fraction solution
+It's an n*n 2-d numpy array where W[a][b] is the indicator for whether vertex a and vertex b are adjacent in the fraction solution.
 4. Label
-It's a scalar.4.
+It's a scalar.
