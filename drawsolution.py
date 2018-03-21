@@ -4,9 +4,11 @@ import networkx as nx
 import nxtools
 
 
-def draw(graph, edge_solution, pos=None):
-    if pos is None:
-        pos = nx.shell_layout(graph)
+def draw(graph, edge_solution):
+    pos = {node: attr['pos'] for node, attr in graph.nodes(data=True)}
+
+    #if pos is None:
+    #    pos = nx.shell_layout(graph)
 
     nx.draw_networkx_nodes(graph, pos, node_size=30)
 
