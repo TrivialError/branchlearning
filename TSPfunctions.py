@@ -24,28 +24,25 @@ def tsp_connecting_cutting_planes(lp, var_dict, graph):
 
     lp.optimize()
     soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
+    i = 0
 
     while True:
+        i += 1
         nx.set_edge_attributes(graph, soln_index, 'capacity')
         soln_graph = nx.Graph(((n1, n2, attr) for n1, n2, attr in graph.edges(data=True) if attr['capacity'] > 0))
         if nx.is_connected(soln_graph):
             break
         components = nx.connected_components(soln_graph)
         for node_set in components:
-            edge_cut_list = []
-            for p1_node in node_set:
-                for p2_node in set(graph.nodes()) - node_set:
-                    if graph.has_edge(p1_node, p2_node):
-                        if p1_node > p2_node:
-                            edge_cut_list.append((p2_node, p1_node))
-                        else:
-                            edge_cut_list.append((p1_node, p2_node))
+            edge_cut_list = [(n1, n2) if n1 < n2 else (n2, n1)
+                             for n1 in node_set for n2 in set(graph.nodes()) - node_set]
             edge_cut_vars = grb.tupledict({index: lp.getVarByName(var_dict[index]) for index in edge_cut_list})
             lp.addConstr(edge_cut_vars.sum() >= 2)
         lp.update()
         lp.optimize()
         soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
 
+    print("Number of connecting cut iterations: ", i)
     return lp.objVal, grb.tupledict({index: (var_dict[index], val) for index, val in soln_index.items()})
 
 

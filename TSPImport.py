@@ -96,7 +96,7 @@ Putting it all together
 """
 
 
-def produce_final(file="./TSPLIB/rat99.tsp"):
+def produce_final(file="./TSPLIB/eil51.tsp"):
     data = read_tsp_data(file)
     dimension = detect_dimension(data)
     cities_set = get_cities(data, dimension)

@@ -4,7 +4,8 @@ import queue
 import math
 import drawsolution
 import time
-import DataPoint
+import random
+from SBScoresData import *
 
 
 # lp_initializer should generate a gurobi model and variable {index: names} in a tupledict given a graph
@@ -26,6 +27,8 @@ class BranchAndBound:
             self.branch_rule = lambda model, g, soln: self.strong_branching(model, g, soln, data=True)
         elif branch_rule == "basic":
             self.branch_rule = self.basic_branch
+        elif branch_rule == "random":
+            self.branch_rule = self.random_branch
         self.lp, self.var_dict = lp_initializer(graph)
         self.lp.params.outputflag = 0
         self.graph = graph
@@ -51,6 +54,8 @@ class BranchAndBound:
 
         while not self.queue.empty():
             self.branch_step(draw)
+
+        print("Total number of nodes: ", self.num_branch_nodes)
 
         return self.best_soln
 
@@ -111,7 +116,7 @@ class BranchAndBound:
 
         if all([var[1] % 1 == 0 for _, var in lp0_soln.items()]) and obj0 < self.best_soln[0]:
             self.best_soln = (obj0, lp0_soln)
-            print("Updated best solution to: ", obj0)
+            print("Updating best solution to: ", obj0)
         elif obj0 < self.best_soln[0]:
             self.num_branch_nodes += 1
             print("adding branch node: ", self.num_branch_nodes)
@@ -124,7 +129,7 @@ class BranchAndBound:
 
         if all([var[1] % 1 == 0 for _, var in lp1_soln.items()]) and obj1 < self.best_soln[0]:
             self.best_soln = (obj1, lp1_soln)
-            print("Updated best solution to: ", obj1)
+            print("Updating best solution to: ", obj1)
         elif obj1 < self.best_soln[0]:
             self.num_branch_nodes += 1
             print("adding branch node: ", self.num_branch_nodes)
@@ -135,12 +140,11 @@ class BranchAndBound:
         else:
             print("Discarding solution; obj value compared to best solution: ", obj1, self.best_soln[0])
 
-    # TODO add SB data collection
-    def strong_branching(self, model, graph, soln_value, data=False):
+    def strong_branching(self, model, graph, soln_value, data=False, alpha=0.2):
         frac_vars = [(index, var[0]) for index, var in soln_value[1].items() if 0 < var[1] < 1]
         print("Number of variables to calculate SB score: ", len(frac_vars))
         obj = soln_value[0]
-        sb_scores = {}
+        sb_scores = []
         for branch_var in frac_vars:
             lp0 = model.copy()
             lp1 = model.copy()
@@ -157,26 +161,32 @@ class BranchAndBound:
             obj0, lp0_soln = self.node_lower_bound(lp0, self.var_dict, self.graph)
             obj1, lp1_soln = self.node_lower_bound(lp1, self.var_dict, self.graph)
 
-            # TODO change SB scores to 0 or 1 based on percentile
-            sb_score = abs(obj - obj0)*abs(obj - obj1)/(obj**2)
-            sb_scores[sb_score] = branch_var
+            sb_score = max(0.1, abs(obj - obj0)) * max(0.1, abs(obj - obj1))
+            sb_scores.append((sb_score, branch_var))
 
         if not sb_scores:
             return None
 
-        print("strong branching scores: ", sb_scores)
+        sb_scores_sorted = sorted(sb_scores, key=lambda item: item[0], reverse=True)
+
+        best_score = sb_scores_sorted[0][0]
+        sb_scores_bin = [(1, var) if score >= (1 - alpha) * best_score else (0, var) for (score, var) in sb_scores]
+
         if data:
+            best_score = sb_scores_sorted[0][0]
+            sb_scores_bin = [(1, var) if score >= (1 - alpha) * best_score else (0, var) for (score, var) in sb_scores]
             lp_solution_values = {index: var[1] for index, var in soln_value[1].items()}
             nx.set_edge_attributes(self.graph, lp_solution_values, name='solution')
             lp_soln = nx.to_numpy_matrix(self.graph, weight='solution')
-            soln_adj_mat = lp_soln[lp_soln > 0] = 1
+            lp_soln[lp_soln > 0] = 1
+            soln_adj_mat = lp_soln
             adj_mat = nx.to_numpy_matrix(self.graph, weight='')
             weight_mat = nx.to_numpy_matrix(self.graph, weight='weight')
-            for score, var in sb_scores.items():
-                data = DataPoint.DataPoint(len(self.graph), lp_soln, soln_adj_mat, adj_mat, weight_mat, var[0], score)
-                data.save()
+            var_sb_label_dict = {var[0]: sb_label for sb_label, var in sb_scores_bin}
+            data = SBScoresData(len(self.graph), lp_soln, soln_adj_mat, adj_mat, weight_mat, var_sb_label_dict)
+            data.save()
 
-        best_var = sb_scores[max(sb_scores, key=sb_scores.get)]
+        best_var = sb_scores_sorted[0][1]
 
         return best_var
 
@@ -184,3 +194,19 @@ class BranchAndBound:
     def basic_branch(model, graph, soln_value):
         return next(((index, soln_value[1][index][0]) for index in soln_value[1].keys()
                      if 0 < soln_value[1][index][1] < 1), None)
+
+    @staticmethod
+    def random_branch(model, graph, soln_value):
+        return random.choice([(index, soln_value[1][index][0]) for index in soln_value[1].keys()
+                              if 0 < soln_value[1][index][1] < 1])
+
+    def learned_branch(self, model, graph, soln_value):
+        lp_solution_values = {index: var[1] for index, var in soln_value[1].items()}
+        nx.set_edge_attributes(self.graph, lp_solution_values, name='solution')
+        lp_soln = nx.to_numpy_matrix(self.graph, weight='solution')
+        lp_soln[lp_soln > 0] = 1
+        soln_adj_mat = lp_soln
+        adj_mat = nx.to_numpy_matrix(self.graph, weight='')
+        weight_mat = nx.to_numpy_matrix(self.graph, weight='weight')
+        data = SBScoresData(len(self.graph), lp_soln, soln_adj_mat, adj_mat, weight_mat, {}, train=False)
+        # TODO somehow send data to trained model to get branch variable

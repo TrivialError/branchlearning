@@ -1,12 +1,15 @@
-import pickle
+import _pickle
+import gzip
 
-data = pickle.load(open("./Data/1feb5f02-582f-49bb-8c48-169448e311e6", 'rb'))
+with gzip.open("./Data/9c581d0e-2c19-47ad-a9f2-ab9a047d2e23") as f:
+    data = _pickle.load(f)
 
-print(data.name)
-print(data.n)
-print(data.lp_soln)
-print(data.soln_adj_mat)
-print(data.adj_mat)
-print(data.weight_mat)
-print(data.edge)
-print(data.sb_label)
+print("name: ", data.name)
+print("n: ", data.n)
+print("lp_soln: ", data.lp_soln)
+print("soln_adj_mat: ", data.soln_adj_mat)
+print("adj_mat: ", data.adj_mat)
+print("weight_mat: ", data.weight_mat)
+
+# Each key is an edge and each value is a SB label
+print("var_sb_label_dict: ", data.var_sb_label_dict)
