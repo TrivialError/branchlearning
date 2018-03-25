@@ -42,7 +42,6 @@ def tsp_connecting_cutting_planes(lp, var_dict, graph):
         lp.optimize()
         soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
 
-    print("Number of connecting cut iterations: ", i)
     return lp.objVal, grb.tupledict({index: (var_dict[index], val) for index, val in soln_index.items()})
 
 

@@ -20,7 +20,8 @@ from SBScoresData import *
 
 
 class BranchAndBound:
-    def __init__(self, branch_rule, lp_initializer, graph, node_lower_bound, init_soln=(math.inf, {})):
+    def __init__(self, tsp_instance, branch_rule, lp_initializer, graph, node_lower_bound, init_soln=(math.inf, {})):
+        self.tsp_instance = tsp_instance
         if branch_rule == "strong":
             self.branch_rule = self.strong_branching
         elif branch_rule == "strongdata":
@@ -183,7 +184,8 @@ class BranchAndBound:
             adj_mat = nx.to_numpy_matrix(self.graph, weight='')
             weight_mat = nx.to_numpy_matrix(self.graph, weight='weight')
             var_sb_label_dict = {var[0]: sb_label for sb_label, var in sb_scores_bin}
-            data = SBScoresData(len(self.graph), lp_soln, soln_adj_mat, adj_mat, weight_mat, var_sb_label_dict)
+            data = SBScoresData(self.tsp_instance, len(self.graph), lp_soln, soln_adj_mat,
+                                adj_mat, weight_mat, var_sb_label_dict)
             data.save()
 
         best_var = sb_scores_sorted[0][1]
@@ -208,5 +210,6 @@ class BranchAndBound:
         soln_adj_mat = lp_soln
         adj_mat = nx.to_numpy_matrix(self.graph, weight='')
         weight_mat = nx.to_numpy_matrix(self.graph, weight='weight')
-        data = SBScoresData(len(self.graph), lp_soln, soln_adj_mat, adj_mat, weight_mat, {}, train=False)
+        data = SBScoresData(self.tsp_instance, len(self.graph), lp_soln, soln_adj_mat,
+                            adj_mat, weight_mat, {}, train=False)
         # TODO somehow send data to trained model to get branch variable
