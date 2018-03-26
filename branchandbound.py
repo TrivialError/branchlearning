@@ -45,6 +45,9 @@ class BranchAndBound:
         lp_copy = self.lp.copy()  # not doing this copy is equivalent to keeping cutting planes around
 
         obj, lp_soln = self.node_lower_bound(lp_copy, self.var_dict, self.graph)
+        if obj is None:
+            print("Initial problem is infeasible")
+            return
 
         if all([var[1] % 1 == 0 for _, var in lp_soln.items()]) and obj < self.best_soln[0]:
             self.best_soln = (obj, lp_soln)
@@ -64,11 +67,11 @@ class BranchAndBound:
         model_copy = self.lp.copy()
         queue_node = self.queue.get()
         lp_value = queue_node[0]
-        # print("lp_value compared to best so far: ", lp_value, self.best_soln[0])
         if lp_value > self.best_soln[0]:
             print("branch node " + str(queue_node[1]) + " discarded directly from queue")
             return
         print("processing branch node: ", queue_node[1])
+        print("lp_value compared to best so far: ", lp_value, self.best_soln[0])
         branches = queue_node[2]
         soln = queue_node[3]
         for index, var in branches.items():
@@ -113,33 +116,35 @@ class BranchAndBound:
         obj0, lp0_soln = self.node_lower_bound(lp0, self.var_dict, self.graph)
         obj1, lp1_soln = self.node_lower_bound(lp1, self.var_dict, self.graph)
         print("Time to solve new LPs: ", time.clock() - a)
-        print("new lp objective values: ", lp0.objVal, lp1.objVal)
+        print("new lp objective values: ", obj0, obj1)
 
-        if all([var[1] % 1 == 0 for _, var in lp0_soln.items()]) and obj0 < self.best_soln[0]:
-            self.best_soln = (obj0, lp0_soln)
-            print("Updating best solution to: ", obj0)
-        elif obj0 < self.best_soln[0]:
-            self.num_branch_nodes += 1
-            print("adding branch node: ", self.num_branch_nodes)
-            self.queue.put((obj0, self.num_branch_nodes, branches0, lp0_soln))
-            # print("fractional variables when adding to queue: ",
-            #       [(index, var[0], var[1]) for index, var in lp1_soln.items() if 0 < var[1] < 1])
-            # print("queue node and branches for insert: ", self.num_branch_nodes, branches1)
-        else:
-            print("Discarding solution; obj value compared to best solution: ", obj0, self.best_soln[0])
+        if obj0 is not None:
+            if all([var[1] % 1 == 0 for _, var in lp0_soln.items()]) and obj0 < self.best_soln[0]:
+                self.best_soln = (obj0, lp0_soln)
+                print("Updating best solution to: ", obj0)
+            elif obj0 < self.best_soln[0]:
+                self.num_branch_nodes += 1
+                print("adding branch node: ", self.num_branch_nodes)
+                self.queue.put((obj0, self.num_branch_nodes, branches0, lp0_soln))
+                # print("fractional variables when adding to queue: ",
+                #       [(index, var[0], var[1]) for index, var in lp1_soln.items() if 0 < var[1] < 1])
+                # print("queue node and branches for insert: ", self.num_branch_nodes, branches1)
+            else:
+                print("Discarding solution; obj value compared to best solution: ", obj0, self.best_soln[0])
 
-        if all([var[1] % 1 == 0 for _, var in lp1_soln.items()]) and obj1 < self.best_soln[0]:
-            self.best_soln = (obj1, lp1_soln)
-            print("Updating best solution to: ", obj1)
-        elif obj1 < self.best_soln[0]:
-            self.num_branch_nodes += 1
-            print("adding branch node: ", self.num_branch_nodes)
-            self.queue.put((obj1, self.num_branch_nodes, branches1, lp1_soln))
-            # print("fractional variables when adding to queue: ",
-            #       [(index, var[0], var[1]) for index, var in lp1_soln.items() if 0 < var[1] < 1])
-            # print("queue node and branches for insert: ", self.num_branch_nodes, branches1)
-        else:
-            print("Discarding solution; obj value compared to best solution: ", obj1, self.best_soln[0])
+        if obj1 is not None:
+            if all([var[1] % 1 == 0 for _, var in lp1_soln.items()]) and obj1 < self.best_soln[0]:
+                self.best_soln = (obj1, lp1_soln)
+                print("Updating best solution to: ", obj1)
+            elif obj1 < self.best_soln[0]:
+                self.num_branch_nodes += 1
+                print("adding branch node: ", self.num_branch_nodes)
+                self.queue.put((obj1, self.num_branch_nodes, branches1, lp1_soln))
+                # print("fractional variables when adding to queue: ",
+                #       [(index, var[0], var[1]) for index, var in lp1_soln.items() if 0 < var[1] < 1])
+                # print("queue node and branches for insert: ", self.num_branch_nodes, branches1)
+            else:
+                print("Discarding solution; obj value compared to best solution: ", obj1, self.best_soln[0])
 
     def strong_branching(self, model, graph, soln_value, data=False, alpha=0.2):
         frac_vars = [(index, var[0]) for index, var in soln_value[1].items() if 0 < var[1] < 1]
@@ -162,7 +167,10 @@ class BranchAndBound:
             obj0, lp0_soln = self.node_lower_bound(lp0, self.var_dict, self.graph)
             obj1, lp1_soln = self.node_lower_bound(lp1, self.var_dict, self.graph)
 
-            sb_score = max(0.1, abs(obj - obj0)) * max(0.1, abs(obj - obj1))
+            if obj0 is None or obj1 is None:
+                sb_score = math.inf
+            else:
+                sb_score = max(0.1, obj0 - obj) * max(0.1, obj1 - obj)
             sb_scores.append((sb_score, branch_var))
 
         if not sb_scores:
@@ -171,6 +179,7 @@ class BranchAndBound:
         sb_scores_sorted = sorted(sb_scores, key=lambda item: item[0], reverse=True)
 
         best_score = sb_scores_sorted[0][0]
+        print("best branch score: ", best_score)
         sb_scores_bin = [(1, var) if score >= (1 - alpha) * best_score else (0, var) for (score, var) in sb_scores]
 
         if data:

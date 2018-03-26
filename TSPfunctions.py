@@ -23,11 +23,14 @@ def tsp_connecting_cutting_planes(lp, var_dict, graph):
     # print("running connecting cutting planes")
 
     lp.optimize()
+    if lp.status == grb.GRB.Status.INFEASIBLE:
+        return None, {}
     soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
     i = 0
 
     while True:
         i += 1
+        # print(i)
         nx.set_edge_attributes(graph, soln_index, 'capacity')
         soln_graph = nx.Graph(((n1, n2, attr) for n1, n2, attr in graph.edges(data=True) if attr['capacity'] > 0))
         if nx.is_connected(soln_graph):
@@ -40,8 +43,11 @@ def tsp_connecting_cutting_planes(lp, var_dict, graph):
             lp.addConstr(edge_cut_vars.sum() >= 2)
         lp.update()
         lp.optimize()
+        if lp.status == grb.GRB.status.INFEASIBLE:
+            return None, {}
         soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
 
+    print("number of connecting plane iterations: ", i)
     return lp.objVal, grb.tupledict({index: (var_dict[index], val) for index, val in soln_index.items()})
 
 
@@ -77,7 +83,6 @@ def tsp_cutting_planes(lp, var_dict, graph):
         a = time.clock()
         lp.update()
         lp.optimize()
-        print("time to solve lp: ", time.clock() - a)
         soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
 
     return lp.objVal, grb.tupledict({index: (var_dict[index], val) for index, val in soln_index.items()})

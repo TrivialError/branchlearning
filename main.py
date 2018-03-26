@@ -10,11 +10,11 @@ from branchandbound import *
 def main():
 
     a = time.clock()
-    tsp_instance = "a280"
+    tsp_instance = "eil101"
     graph = TSPImport.produce_final("./TSPLIB/" + tsp_instance + ".tsp")
 
-    bnb = BranchAndBound(tsp_instance, "random", TSPfunctions.tsp_lp_initializer, graph,
-                         TSPfunctions.tsp_connecting_cutting_planes, (math.inf, {}))
+    bnb = BranchAndBound(tsp_instance, "strong", TSPfunctions.tsp_lp_initializer, graph,
+                         TSPfunctions.tsp_connecting_cutting_planes, (629, {}))
 
     soln = bnb.solve(draw=False)
 
