@@ -58,8 +58,6 @@ def tsp_cutting_planes(lp, var_dict, graph):
     lp.optimize()
     soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
 
-    # TODO column generation is almost definitely needed. Try to figure out if we have to re-find all the
-    #   cutting planes every time we add edges (answer is probably yes)
     while True:
         nx.set_edge_attributes(graph, soln_index, 'capacity')
         cut_partitions = []

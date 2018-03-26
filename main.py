@@ -5,8 +5,6 @@ import TSPImport
 from branchandbound import *
 
 
-# TODO fix handling of infeasible branches; should add try excepts before running node_lower_bound on new branches
-#   in both the branch_step function and branching methods
 def main():
 
     a = time.clock()
