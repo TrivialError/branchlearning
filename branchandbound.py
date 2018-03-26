@@ -172,6 +172,10 @@ class BranchAndBound:
             else:
                 sb_score = max(0.1, obj0 - obj) * max(0.1, obj1 - obj)
             sb_scores.append((sb_score, branch_var))
+            if not data:
+                if obj0 > self.best_soln[0] and obj1 > self.best_soln[0]:
+                    print("ending SB early; found trimmable branches")
+                    break
 
         if not sb_scores:
             return None
