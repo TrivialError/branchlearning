@@ -28,6 +28,8 @@ def tsp_connecting_cutting_planes(lp, var_dict, graph):
     soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
     i = 0
 
+    new_constrs = []
+
     while True:
         i += 1
         # print(i)
@@ -40,7 +42,8 @@ def tsp_connecting_cutting_planes(lp, var_dict, graph):
             edge_cut_list = [(n1, n2) if n1 < n2 else (n2, n1)
                              for n1 in node_set for n2 in set(graph.nodes()) - node_set]
             edge_cut_vars = grb.tupledict({index: lp.getVarByName(var_dict[index]) for index in edge_cut_list})
-            lp.addConstr(edge_cut_vars.sum() >= 2)
+            constr = lp.addConstr(edge_cut_vars.sum() >= 2)
+            new_constrs.append(("connecting plane constraint", [var_dict[index] for index in edge_cut_list]))
         lp.update()
         lp.optimize()
         if lp.status == grb.GRB.status.INFEASIBLE:
@@ -48,7 +51,13 @@ def tsp_connecting_cutting_planes(lp, var_dict, graph):
         soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
 
     print("number of connecting plane iterations: ", i)
-    return lp.objVal, grb.tupledict({index: (var_dict[index], val) for index, val in soln_index.items()})
+    return lp.objVal, grb.tupledict({index: (var_dict[index], val) for index, val in soln_index.items()}), new_constrs
+
+
+def tsp_get_constrs_from_description(lp, constrs):
+    for constr in constrs:
+        if constr[0] == "connecting plane constraint":
+            lp.addConstr(constr[1].sum() >= 2)
 
 
 def tsp_cutting_planes(lp, var_dict, graph):

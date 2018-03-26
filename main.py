@@ -11,13 +11,14 @@ def main():
     tsp_instance = "rat195"
     graph = TSPImport.produce_final("./TSPLIB/" + tsp_instance + ".tsp")
 
-    bnb = BranchAndBound(tsp_instance, "strong", TSPfunctions.tsp_lp_initializer, graph,
+    bnb = BranchAndBound(tsp_instance, "random", TSPfunctions.tsp_lp_initializer, graph,
                          TSPfunctions.tsp_connecting_cutting_planes, (2323, {}))
 
     soln = bnb.solve(draw=False)
 
     print("final objective value: ", soln[0])
     print("time to solve: ", time.clock()-a)
+
 
 if __name__ == "__main__":
     main()
