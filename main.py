@@ -8,11 +8,11 @@ from branchandbound import *
 def main():
 
     a = time.clock()
-    tsp_instance = "rat195"
+    tsp_instance = "kroA150"
     graph = TSPImport.produce_final("./TSPLIB/" + tsp_instance + ".tsp")
 
-    bnb = BranchAndBound(tsp_instance, "random", TSPfunctions.tsp_lp_initializer, graph,
-                         TSPfunctions.tsp_connecting_cutting_planes, (2323, {}))
+    bnb = BranchAndBound(tsp_instance, "strong", TSPfunctions.tsp_lp_initializer, graph,
+                         TSPfunctions.tsp_connecting_cutting_planes, (26524, {}))
 
     soln = bnb.solve(draw=False)
 
