@@ -40,11 +40,11 @@ class BranchAndBound:
         self.node_lower_bound = node_lower_bound
         self.queue = queue.PriorityQueue()
         self.num_branch_nodes = 0
-
         self.best_soln = init_soln
 
-    def solve(self, draw=False):
+    def solve(self, draw=False, timeout=math.inf):
         print("Running Branch and Bound")
+        t = time.clock()
 
         lp_copy = self.lp.copy()
 
@@ -62,6 +62,8 @@ class BranchAndBound:
 
         while not self.queue.empty():
             self.branch_step(draw)
+            if time.clock() - t > timeout:
+                return "TIMEOUT"
 
         print("Total number of nodes: ", self.num_branch_nodes)
 

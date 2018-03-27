@@ -47,10 +47,10 @@ def tsp_connecting_cutting_planes(lp, var_dict, graph):
         lp.update()
         lp.optimize()
         if lp.status == grb.GRB.status.INFEASIBLE:
-            return None, {}
+            return None, {}, None
         soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
 
-    print("number of connecting plane iterations: ", i)
+    # print("number of connecting plane iterations: ", i)
     return lp.objVal, grb.tupledict({index: (var_dict[index], val) for index, val in soln_index.items()}), new_constrs
 
 
