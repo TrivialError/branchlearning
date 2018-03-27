@@ -10,12 +10,15 @@ def load_batch(n):
     batch_size = n
     File= random.choice(os.listdir("./Data"))
     #print("File: ", File)
-    while not File.endswith('.dms'):
-        File= random.choice(os.listdir("./Data"))
-    with gzip.open('./Data/' + File) as f:
-            data = pickle.load(f)
-    
-            
+    m = 0
+    while m < batch_size:    
+        while not File.endswith('.dms'):
+            File= random.choice(os.listdir("./Data"))
+            #print("File: ", File)
+        with gzip.open('./Data/' + File) as f:
+                data = pickle.load(f)
+        m = data.n
+   
     #print("name: ", data.name)
     #print("n: ", data.n)
     #print("lp_soln: ", data.lp_soln)
