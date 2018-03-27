@@ -24,7 +24,7 @@ def tsp_connecting_cutting_planes(lp, var_dict, graph):
 
     lp.optimize()
     if lp.status == grb.GRB.Status.INFEASIBLE:
-        return None, {}
+        return None, {}, None
     soln_index = {index: lp.getVarByName(name).X for index, name in var_dict.items()}
     i = 0
 

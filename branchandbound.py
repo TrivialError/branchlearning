@@ -85,9 +85,10 @@ class BranchAndBound:
             model_copy.addConstr(model_var == var[1])
 
         print("number of extra_constrs: ", len(extra_constrs))
-        for constr in extra_constrs:
-            # TODO technically this shouldn't rely on TSPfunctions at all
-            TSPfunctions.tsp_get_constrs_from_description(model_copy, constr)
+        # uncomment the following to add cutting plane saving
+        # for constr in extra_constrs:
+        #     # TODO technically this shouldn't rely on TSPfunctions at all
+        #     TSPfunctions.tsp_get_constrs_from_description(model_copy, constr)
 
         if draw:
             edge_solution = grb.tupledict([(index, soln[index][1]) for index in soln.keys()])

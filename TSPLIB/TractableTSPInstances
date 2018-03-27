@@ -8,10 +8,16 @@ rd100 - 142 nodes SB
 eil101 - 13 nodes SB
 u159 - 23 nodes SB
 kroA150 - 338 nodes SB
+kroA100 - 596 nodes SB
+kroC100 - 106 nodes SB
+kroD100 - 114 nodes SB
+rat99 - 10 nodes SB
+
+random100 - 123 nodes SB
+random150 - 278 nodes SB
 
 to check:
 kroX100
 kroX150
-d198
 ch130
 ch150
