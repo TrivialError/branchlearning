@@ -1,6 +1,7 @@
 import networkx as nx
 import itertools
 import random
+import uuid
 
 
 def complete_graph_random_weights(n):
@@ -24,3 +25,10 @@ def complete_random_euclidean_graph(n, field_size=1000):
                                                    (node1[1]['pos'][1] - node2[1]['pos'][1]) ** 2) ** 0.5)
     nx.set_edge_attributes(graph, edge_weights, name='weight')
     return graph
+
+
+def save_complete_random_euclidean_graph(n, field_size=1000, filename=str(uuid.uuid4())):
+    f = open(filename, 'w')
+    f.write("DIMENSION: " + str(n) + '\n')
+    for i in range(n):
+        f.write(str(i) + " " + str(random.randint(0, field_size)) + " " + str(random.randint(0, field_size)) + '\n')

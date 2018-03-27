@@ -30,7 +30,7 @@ edges, labels = [item[0] for item in edges_labels], [item[1] for item in edges_l
 print("Edges: ", edges)
 
 for i in range(batch_size):
-    lp_soln_a = np.append(lp_soln_a, np.array([edges[i],np.array(data.lp_soln)]))
+    lp_soln_a = np.append(lp_soln_a, data.lp_soln)
     adj_mat_a = np.append(adj_mat_a, np.array([edges[i],np.array(data.adj_mat)]))
     soln_adj_mat_a = np.append(soln_adj_mat_a, np.array([edges[i],np.array(data.soln_adj_mat)]))
     weight_mat_a = np.append(weight_mat_a, np.array([edges[i],np.array(data.weight_mat)]))
@@ -38,7 +38,7 @@ for i in range(batch_size):
 #print("LPSolution: ", lp_soln_a)
     
 batch = (np.array(edges), lp_soln_a, adj_mat_a, soln_adj_mat_a, weight_mat_a, np.array(labels))
-    
-print("Batch: ", batch)
 
+print(batch[1])
+print(data.lp_soln)
 

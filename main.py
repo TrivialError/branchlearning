@@ -8,14 +8,14 @@ from branchandbound import *
 def main():
 
     a = time.clock()
-    tsp_instance = "kroA200"
+    tsp_instance = "random"
     if tsp_instance is not "random":
         graph = TSPImport.produce_final("./TSPLIB/" + tsp_instance + ".tsp")
     else:
-        graph = nxtools.complete_random_euclidean_graph(200, 1000)
+        graph = nxtools.complete_random_euclidean_graph(125, 10000)
 
     bnb = BranchAndBound(tsp_instance, "strong", TSPfunctions.tsp_lp_initializer, graph,
-                         TSPfunctions.tsp_connecting_cutting_planes, (29368, {}))
+                         TSPfunctions.tsp_connecting_cutting_planes, (math.inf, {}))
 
     soln = bnb.solve(draw=False)
 

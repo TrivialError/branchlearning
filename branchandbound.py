@@ -199,7 +199,7 @@ class BranchAndBound:
         print("best branch score: ", best_score)
         sb_scores_bin = [(1, var) if score >= (1 - alpha) * best_score else (0, var) for (score, var) in sb_scores]
 
-        if data:
+        if data and len(sb_scores) >= 4:
             best_score = sb_scores_sorted[0][0]
             sb_scores_bin = [(1, var) if score >= (1 - alpha) * best_score else (0, var) for (score, var) in sb_scores]
             lp_solution_values = {index: var[1] for index, var in soln_value[1].items()}
