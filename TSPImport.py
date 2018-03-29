@@ -4,10 +4,9 @@ import numpy as np
 from scipy.spatial.distance import pdist, squareform
 import networkx as nx
 import drawsolution
+import math
 
 #  We use a regex here to clean characters and keep only numerics
-
-cities_set = []
 
 
 #  we open the TSP file and put each line cleaned of spaces
@@ -48,6 +47,13 @@ def detect_dimension(in_list):
             return non_numeric.sub("", element)
 
 
+def detect_solution_value(in_list):
+    non_numeric = re.compile(r'[^\d.]+')
+    for element in in_list:
+        if element.startswith("OPTIMAL VALUE"):
+            return non_numeric.sub("", element)
+
+
 """
 Iterate through the list of line from the file
 if the line starts with a numeric value within the 
@@ -59,6 +65,7 @@ the coordinates of each city
 
 def get_cities(list, dimension):
     dimension = int(dimension)
+    cities_set = []
     for item in list:
         index, space, rest = item.partition(' ')
         if index.isdigit():
@@ -96,16 +103,21 @@ Putting it all together
 """
 
 
-def produce_final(file="./TSPLIB/eil51.tsp"):
+def produce_final(file):
     data = read_tsp_data(file)
     dimension = detect_dimension(data)
+    solution = detect_solution_value(data)
+    if solution is None:
+        solution = math.inf
+    else:
+        solution = float(solution)
     cities_set = get_cities(data, dimension)
     #print(cities_set)
     #print(data)
     graph, cities_tups_indexed = city_tup(cities_set)
     nx.set_node_attributes(graph, dict(cities_tups_indexed), 'pos')
-    return graph
+    return graph, solution
 
 if __name__ == '__main__':
-    g = produce_final()
+    g = produce_final("berlin52.tsp")
 # or produce_final("berlin52.tsp") or whatever filename you wish to have

@@ -32,3 +32,4 @@ def save_complete_random_euclidean_graph(n, field_size=1000, filename=str(uuid.u
     f.write("DIMENSION: " + str(n) + '\n')
     for i in range(n):
         f.write(str(i) + " " + str(random.randint(0, field_size)) + " " + str(random.randint(0, field_size)) + '\n')
+    f.close()

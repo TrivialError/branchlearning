@@ -21,8 +21,6 @@ from SBScoresData import *
 #   that is, a {varindex: (varname, varvalue)} tupledict and an objVal
 
 
-# TODO add saving cutting planes in branch nodes
-# TODO add random Euclidean graphs for training data
 class BranchAndBound:
     def __init__(self, tsp_instance, branch_rule, lp_initializer, graph, node_lower_bound, init_soln=(math.inf, {})):
         self.tsp_instance = tsp_instance
@@ -53,9 +51,14 @@ class BranchAndBound:
             print("Initial problem is infeasible")
             return
 
+        if draw:
+            edge_solution = grb.tupledict([(index, lp_soln[index][1]) for index in lp_soln.keys()])
+            drawsolution.draw(self.graph, edge_solution)
+
         if all([var[1] % 1 == 0 for _, var in lp_soln.items()]) and obj < self.best_soln[0]:
             self.best_soln = (obj, lp_soln)
-            print("Updated best solution to: ", obj)
+            print("solution found without branching; value: ", obj)
+            return self.best_soln, 0
 
         self.num_branch_nodes += 1
         self.queue.put((obj, self.num_branch_nodes, grb.tupledict(), lp_soln, new_constrs))
@@ -63,11 +66,13 @@ class BranchAndBound:
         while not self.queue.empty():
             self.branch_step(draw)
             if time.clock() - t > timeout:
-                return "TIMEOUT"
+                return None, None
 
-        print("Total number of nodes: ", self.num_branch_nodes)
+        if draw:
+            edge_solution = grb.tupledict([(index, self.best_soln[1][index][1]) for index in self.best_soln[1].keys()])
+            drawsolution.draw(self.graph, edge_solution)
 
-        return self.best_soln
+        return self.best_soln, self.num_branch_nodes
 
     def branch_step(self, draw=False):
         model_copy = self.lp.copy()
@@ -128,8 +133,8 @@ class BranchAndBound:
         a = time.clock()
         obj0, lp0_soln, new_constrs0 = self.node_lower_bound(lp0, self.var_dict, self.graph)
         obj1, lp1_soln, new_constrs1 = self.node_lower_bound(lp1, self.var_dict, self.graph)
-        print("new_constrs0: ", len(new_constrs0))
-        print("new_constrs1: ", len(new_constrs1))
+        # print("new_constrs0: ", len(new_constrs0))
+        # print("new_constrs1: ", len(new_constrs1))
         print("Time to solve new LPs: ", time.clock() - a)
         print("new lp objective values: ", obj0, obj1)
 
@@ -187,7 +192,7 @@ class BranchAndBound:
             else:
                 sb_score = max(0.1, obj0 - obj) * max(0.1, obj1 - obj)
             sb_scores.append((sb_score, branch_var))
-            if not data:
+            if not data and obj0 and obj1:
                 if obj0 > self.best_soln[0] and obj1 > self.best_soln[0]:
                     print("ending SB early; found trimmable branches")
                     break

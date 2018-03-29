@@ -8,18 +8,22 @@ from branchandbound import *
 def main():
 
     a = time.clock()
-    tsp_instance = "random"
+    tsp_instance = "random80-07"
+    soln_value = math.inf
     if tsp_instance is not "random":
-        graph = TSPImport.produce_final("./TSPLIB/" + tsp_instance + ".tsp")
+        graph, soln_value = TSPImport.produce_final("./RANLIB/" + tsp_instance + ".tsp")
     else:
-        graph = nxtools.complete_random_euclidean_graph(125, 10000)
+        graph = nxtools.complete_random_euclidean_graph(80, 10000)
 
     bnb = BranchAndBound(tsp_instance, "strong", TSPfunctions.tsp_lp_initializer, graph,
-                         TSPfunctions.tsp_connecting_cutting_planes, (math.inf, {}))
+                         TSPfunctions.tsp_connecting_cutting_planes, (soln_value, {}))
 
-    soln = bnb.solve(draw=False)
+    soln, num_branch_nodes = bnb.solve(draw=False)
 
-    print("final objective value: ", soln[0])
+    if soln:
+        print("final objective value: ", soln[0])
+        print("Total number of nodes: ", num_branch_nodes)
+
     print("time to solve: ", time.clock()-a)
     print("tsp_instance: ", tsp_instance)
 

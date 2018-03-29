@@ -6,17 +6,22 @@ import os
 
 i = 0
 j = 0
-start_size = 80
+start_size = 160
 size_step = 5
 while True:
     if i == 10:
         j += 1
         i = 0
     i += 1
-    if j == 3:
+    if j == 8:
         break
 
-    tsp_instance = 'random' + str(start_size + size_step*j) + '-' + str(i)
+    if i >= 10:
+        tsp_id = str(i)
+    else:
+        tsp_id = "0" + str(i)
+
+    tsp_instance = 'random' + str(start_size + size_step*j) + '-' + tsp_id
 
     filename = './TSPLIB/' + tsp_instance + '.tsp'
 
@@ -28,11 +33,12 @@ while True:
                          TSPfunctions.tsp_connecting_cutting_planes, (math.inf, {}))
 
     soln = bnb.solve(draw=False, timeout=900)
-    if soln == "TIMEOUT":
+    if soln is None:
         os.remove(filename)
     else:
         with open(filename, 'r+') as f:
             content = f.read()
             f.seek(0, 0)
             f.write(('OPTIMAL VALUE: ' + str(soln[0])).rstrip('\r\n') + '\n' + content)
+            f.close()
 
