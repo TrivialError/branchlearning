@@ -6,6 +6,7 @@ import drawsolution
 import time
 import random
 import TSPfunctions
+import trained_model_interface
 from SBScoresData import *
 
 
@@ -212,8 +213,8 @@ class BranchAndBound:
             lp_solution_values = {index: var[1] for index, var in soln_value[1].items()}
             nx.set_edge_attributes(self.graph, lp_solution_values, name='solution')
             lp_soln = nx.to_numpy_matrix(self.graph, weight='solution')
-            lp_soln[lp_soln > 0] = 1
-            soln_adj_mat = lp_soln
+            soln_adj_mat = lp_soln.copy()
+            soln_adj_mat[soln_adj_mat > 0] = 1
             adj_mat = nx.to_numpy_matrix(self.graph, weight='')
             weight_mat = nx.to_numpy_matrix(self.graph, weight='weight')
             var_sb_label_dict = {var[0]: sb_label for sb_label, var in sb_scores_bin}
@@ -239,10 +240,12 @@ class BranchAndBound:
         lp_solution_values = {index: var[1] for index, var in soln_value[1].items()}
         nx.set_edge_attributes(self.graph, lp_solution_values, name='solution')
         lp_soln = nx.to_numpy_matrix(self.graph, weight='solution')
-        lp_soln[lp_soln > 0] = 1
-        soln_adj_mat = lp_soln
+        soln_adj_mat = lp_soln.copy()
+        soln_adj_mat[soln_adj_mat > 0] = 1
         adj_mat = nx.to_numpy_matrix(self.graph, weight='')
         weight_mat = nx.to_numpy_matrix(self.graph, weight='weight')
         data = SBScoresData(self.tsp_instance, len(self.graph), lp_soln, soln_adj_mat,
                             adj_mat, weight_mat, {}, train=False)
-        # TODO somehow send data to trained model to get branch variable
+        branch_var_labels = trained_model_interface.get_branch_var_labels(data)
+        branch_var = max(branch_var_labels, key=lambda bvl: bvl[1])[0]
+        return branch_var, self.var_dict[branch_var]
