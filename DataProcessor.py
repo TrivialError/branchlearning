@@ -8,6 +8,8 @@ import numpy as np
 
 class DataProcessor:
     def __init__(self, batch_size):
+        self._count_1 = 0
+        self._count_0 = 0
         self.files = os.listdir("./Data")
         self.data = []
         self.epoch = 0
@@ -68,7 +70,13 @@ class DataProcessor:
             soln_adj_mat_a[i] = np.array(self.current_soln_adj_mat)
             weight_mat_a[i] = np.array(self.current_weight_mat)
             labels[i] = edge_label[1]
+            if labels[i] == 1:
+                self._count_1 = self._count_1 + 1
+            else:
+                self._count_0 = self._count_0 +1
 
+        print ('label 0', self._count_0)
+        print ('label_1', self._count_1)
         return (np.array(edges), lp_soln_a.astype(int), adj_mat_a.astype(int),
                 soln_adj_mat_a.astype(int), weight_mat_a.astype(int), np.array(labels), N)
 
