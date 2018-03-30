@@ -202,12 +202,20 @@ def gen_G(g_size):
     return np.where(temp > 0.5, 1, 0).reshape(g_size, bt_size, g_n, g_n)
 
 
-def train(net, Mu, eps, _lr, iteration_num, bt_size, dp):
+def train(_net, Mu, eps, _lr, iteration_num, bt_size, dp):
+    #add save and restore support
+    # load the most recent one
+    net, crt_eps = load_model()
+    if crt_eps >= eps:
+        print ("Already Finished")
+        return
+    eps_list = [i + crt_eps + 1 for i in range(eps - crt_eps) ]
+
     optimizer = optim.SGD(net.parameters(), lr=_lr)
     criterion = torch.nn.CrossEntropyLoss()
     running_loss = 0.0
     num = dp.num_batches
-    for i in range(eps):
+    for i in eps_list:
         for j in range(num):
             optimizer.zero_grad()
             # get batch data
@@ -227,34 +235,55 @@ def train(net, Mu, eps, _lr, iteration_num, bt_size, dp):
             if j % num == num - 1:
                 print('[%d, %5d] loss: %.5f' % (i + 1, j + 1, running_loss / num))
                 running_loss = 0.0
+        #add save and reload supoprt
+        if i % save_interval == 0:
+            model_name = dir_saved_model + model_pre + str(i)
+            torch.save(net, model_name)
+    #save model when training finishes
+    model_name = dir_saved_model + model_pre + str(eps)
+    torch.save(net, model_name)
     print('Finished Training')
 
 
 def check_cuda():
+    #return False
     return torch.cuda.is_available()
+
+def load_model():
+    from os import listdir
+    models = listdir(dir_saved_model)
+    if models == []:
+        return _net, 0
+    ts_models = [int( ts.split('no_')[1] ) for ts in models ]
+    model_no = sorted(ts_models, reverse = True)[0]
+    model_most_recent = dir_saved_model + model_pre + str( model_no )
+    return torch.load(model_most_recent), model_no
 
 
 g_n = 30
 g_p = 8
 #g_size = 5  # how many batches
-iteration_num = 4
+iteration_num = 1
 l_rate = 0.01
 eps = 2000
 bt_size = 6
+dir_saved_model = './models/'
+model_pre = 'graph_embedding_nn_no_'
+save_interval = 1
 
 import torch.optim as optim
 
 torch.cuda.set_device(0)
-net = graph_embedding_Net(g_p)
+_net = graph_embedding_Net(g_p)
 if check_cuda():
-    net.cuda()
-print(net)
+    _net.cuda()
+print(_net)
 # t_data, t_label, E, Mu, W, adj_F, adj_G, N_v = get_data()
 # train(net, t_data, t_label, E, Mu, W, adj_F, adj_G ,eps, l_rate, iteration_num, N_v, bt_size)
 import DataProcessor as dp
 
 _dp = dp.DataProcessor(bt_size)
-train(net, [], eps, l_rate, iteration_num, bt_size, _dp)
+train(_net, [], eps, l_rate, iteration_num, bt_size, _dp)
 
 
 
