@@ -73,8 +73,8 @@ class DataProcessor:
             soln_adj_mat_a[i] = np.array(self.current_soln_adj_mat)
             weight_mat_a[i] = np.array(self.current_weight_mat)
             labels[i] = edge_label[1]
-            if labels[i] == 1:
-                self._count_1 = self._count_1 + 1
+            if labels[i] == 0:
+                self.count0 += 1
             else:
                 self.count1 += 1
 
