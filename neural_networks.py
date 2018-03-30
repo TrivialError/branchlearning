@@ -189,8 +189,10 @@ class test_Net(torch.nn.Module):
         #Mu only have one instance in the first dimension
         for i in range(bt_size):
             Mu_tmp[i] = ( Mu[0][e[i][0]] + Mu[0][e[i][1]] )/2
+            
         theta7 = self._theta7( Mu_tmp.view(bt_size, 1, -1))       
         theta6 = self._theta6( ((Mu.sum(1) / n ).view(1, 1, -1).expand(bt_size, 1, p) ) .view(bt_size, 1, -1))       
+
         theta67 = torch.cat((theta6, theta7), 2).clamp( min = 0)    
         theta5 = self._theta5(theta67.clone().view(bt_size, 1, -1)) 
         #classifier = torch.nn.functional.softmax(theta5, dim=1)

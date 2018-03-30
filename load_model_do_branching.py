@@ -47,7 +47,10 @@ def load_model_predict(model_name, t_data, E, adj_G, adj_F, W, iteration_num, Nu
         model = load_model(model_most_recent)
     else:
         model = load_model(model_name)
-    test_model = modify_model(model)
+    if torch.cuda.is_available():
+        test_model = modify_model(model).cuda()
+    else:
+        test_model = modify_model(model)
     test_output = test(E, W, adj_F, adj_G, iteration_num, t_data, Num_node, bt_size, test_model)
     return test_output
 
