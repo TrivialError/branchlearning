@@ -197,8 +197,12 @@ class test_Net(torch.nn.Module):
         theta67 = torch.cat((theta6, theta7), 2).clamp( min = 0)    
         theta5 = self._theta5(theta67.clone().view(bt_size, 1, -1)) 
         #classifier = torch.nn.functional.softmax(theta5, dim=1)
-        classifier = theta5
-        return classifier
+        classifier = torch.nn.functional.softmax( theta5, dim = 2).view(bt_size, -1)
+        output = Variable(torch.ones(bt_size))
+        for i in range(bt_size):
+            output[i] = classifier[i][1] / classifier[i][0]
+        #classifier = theta5
+        return output
 
     def iteration_mu(self, E, Mu, W, adj_F, adj_G, n, bt_size):
         #n = self.n
