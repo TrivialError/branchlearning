@@ -20,7 +20,15 @@ def test(E, W, adj_F, adj_G, iteration_num, t_data, Num_node, bt_size, test_mode
     output = test_model(E, W, adj_F, adj_G, iteration_num, t_data, Num_node, bt_size)
     return output
 
-def load_model_predict(model_name, E, W, adj_F, adj_G, iteration_num, t_data, Num_node, bt_size):
+
+#main Interface
+#t_data : format no change from the orginal one
+#E, adj_G, adj_F, W: the same as the original ones but the value of the first dimension should be set to 1   
+#since those info is shared among the batches
+#iteration_num: the value of T
+#Num_node: the number of node of the instance
+#bt_size : the length of t_data
+def load_model_predict(model_name, t_data, E, adj_G, adj_F, W, iteration_num, Num_node, bt_size):
     model = load_model(model_name)
     test_model = modify_model(model)
     test_output = test(E, W, adj_F, adj_G, iteration_num, t_data, Num_node, bt_size)
