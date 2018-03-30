@@ -13,6 +13,7 @@ import matplotlib.pyplot
 import load_model_do_branching
 from neural_networks import graph_embedding_Net
 from neural_networks import test_Net
+import numpy as np
 
 
 # lp_initializer should generate a gurobi model and variable {index: names} in a tupledict given a graph
@@ -270,18 +271,26 @@ class BranchAndBound:
         return most_frac_var
 
     def learned_branch(self, model, graph, soln_value):
+        n = self.graph.number_of_nodes()
         lp_solution_values = {index: var[1] for index, var in soln_value[1].items()}
         nx.set_edge_attributes(self.graph, lp_solution_values, name='solution')
-        lp_soln = nx.to_numpy_matrix(self.graph, weight='solution')
-        soln_adj_mat = lp_soln.copy()
+
+        lp_soln = np.empty((1, n, n))
+        adj_mat = np.empty((1, n, n))
+        soln_adj_mat = np.empty((1, n, n))
+        weight_mat = np.empty((1, n, n))
+
+        lp_soln[0] = nx.to_numpy_matrix(self.graph, weight='solution')
+        soln_adj_mat[0] = lp_soln.copy()
         soln_adj_mat[soln_adj_mat > 0] = 1
         neighbor_graph = nxtools.k_nearest_neighbor_graph(10, self.graph)
-        adj_mat = nx.to_numpy_matrix(neighbor_graph, weight='')
-        weight_mat = nx.to_numpy_matrix(neighbor_graph, weight='weight')
-        edges = self.graph.edges()
+        adj_mat[0] = nx.to_numpy_matrix(neighbor_graph, weight='')
+        weight_mat[0] = nx.to_numpy_matrix(neighbor_graph, weight='weight')
+        frac_edges = [index for index, var in soln_value[1].items() if 0 < var[1] < 1]
+        print(len(frac_edges))
         branch_var_labels =\
-            load_model_do_branching.load_model_predict("", edges, lp_soln, adj_mat, soln_adj_mat,
-                                                       weight_mat, 3, self.graph.number_of_nodes, len(edges))
+            load_model_do_branching.load_model_predict("", frac_edges, lp_soln, adj_mat, soln_adj_mat,
+                                                       weight_mat, 3, n, len(frac_edges))
         print(branch_var_labels)
         exit()
         branch_var = max(branch_var_labels, key=lambda bvl: bvl[1])[0]
