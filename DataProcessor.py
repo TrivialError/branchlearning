@@ -8,9 +8,7 @@ import numpy as np
 
 class DataProcessor:
     def __init__(self, batch_size):
-        self._count_1 = 0
-        self._count_0 = 0
-        self.files = os.listdir("./Data")
+        self.files = os.listdir("./DataTest")
         self.data = []
         self.epoch = 0
         self.batch_size = batch_size
@@ -19,7 +17,7 @@ class DataProcessor:
         self.count1 = 0
 
         for file in self.files:
-            with gzip.open('./Data/' + file) as f:
+            with gzip.open('./DataTest/' + file) as f:
                 self.data.append(_pickle.load(f))
 
         self.current_epoch_data = queue.Queue()
@@ -78,10 +76,11 @@ class DataProcessor:
             if labels[i] == 1:
                 self._count_1 = self._count_1 + 1
             else:
-                self._count_0 = self._count_0 +1
+                self.count1 += 1
 
-        print ('label 0', self._count_0)
-        print ('label_1', self._count_1)
+        #print("zeros: ", self.count0)
+        #print("ones: ", self.count1)
+        print("labels: ", labels)
         return (np.array(edges), lp_soln_a.astype(int), adj_mat_a.astype(int),
                 soln_adj_mat_a.astype(int), weight_mat_a.astype(int), np.array(labels), N)
 

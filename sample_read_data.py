@@ -1,8 +1,9 @@
 import _pickle
 import gzip
 import random
+import numpy
 
-with gzip.open("./Data/a280-786268f5-80a7-4ff2-9b6f-b90b741c17f0") as f:
+with gzip.open("./Data/random50-02-bfd8d701-493d-4c9c-9a96-1cdd10ef7a79") as f:
     data = _pickle.load(f)
 
 print("name: ", data.name)
