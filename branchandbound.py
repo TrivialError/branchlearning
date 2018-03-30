@@ -205,11 +205,20 @@ class BranchAndBound:
 
         best_score = sb_scores_sorted[0][0]
         print("best branch score: ", best_score)
-        sb_scores_bin = [(1, var) if score >= (1 - alpha) * best_score else (0, var) for (score, var) in sb_scores]
 
         if data and len(sb_scores) >= 4:
             best_score = sb_scores_sorted[0][0]
-            sb_scores_bin = [(1, var) if score >= (1 - alpha) * best_score else (0, var) for (score, var) in sb_scores]
+            sb_scores_labels = [(1, var) if score >= (1 - alpha) * best_score else (0, var)
+                                for (score, var) in sb_scores]
+            sb_scores_labels0 = [(0, var) for score, var in sb_scores_labels if score == 0]
+            sb_scores_labels1 = [(1, var) for score, var in sb_scores_labels if score == 1]
+            if len(sb_scores_labels0) != 0:
+                if len(sb_scores_labels1) / len(sb_scores_labels0) < 0.2:
+                    t = (len(sb_scores_labels1)/(0.3*len(sb_scores_labels0)))  # portion of 0-labels to keep
+                    if t < 1:
+                        print("Deleting " + str(int(round((1 - t) * len(sb_scores_labels0)))) + " data label zeros")
+                        sb_scores_labels0 = random.sample(sb_scores_labels0, round(t*len(sb_scores_labels0)))
+            sb_scores_labels = sb_scores_labels0 + sb_scores_labels1
             lp_solution_values = {index: var[1] for index, var in soln_value[1].items()}
             nx.set_edge_attributes(self.graph, lp_solution_values, name='solution')
             lp_soln = nx.to_numpy_matrix(self.graph, weight='solution')
@@ -217,7 +226,7 @@ class BranchAndBound:
             soln_adj_mat[soln_adj_mat > 0] = 1
             adj_mat = nx.to_numpy_matrix(self.graph, weight='')
             weight_mat = nx.to_numpy_matrix(self.graph, weight='weight')
-            var_sb_label_dict = {var[0]: sb_label for sb_label, var in sb_scores_bin}
+            var_sb_label_dict = {var[0]: sb_label for sb_label, var in sb_scores_labels}
             data = SBScoresData(self.tsp_instance, len(self.graph), lp_soln, soln_adj_mat,
                                 adj_mat, weight_mat, var_sb_label_dict)
             data.save()

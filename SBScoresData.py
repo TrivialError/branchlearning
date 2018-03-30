@@ -26,4 +26,3 @@ class SBScoresData:
         print("writing data to a file")
         with gzip.open("./Data/" + self.name, "wb") as f:
             _pickle.dump(self, f)
-

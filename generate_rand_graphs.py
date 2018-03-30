@@ -27,7 +27,7 @@ while True:
 
     nxtools.save_complete_random_euclidean_graph(start_size + size_step*j, filename=filename)
 
-    graph = TSPImport.produce_final("./TSPLIB/" + tsp_instance + ".tsp")
+    graph, _ = TSPImport.produce_final("./TSPLIB/" + tsp_instance + ".tsp")
 
     bnb = BranchAndBound(tsp_instance, "strong", TSPfunctions.tsp_lp_initializer, graph,
                          TSPfunctions.tsp_connecting_cutting_planes, (math.inf, {}))

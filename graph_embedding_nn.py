@@ -231,21 +231,20 @@ def train(net, Mu, eps, _lr, iteration_num, bt_size, dp):
 
 
 def check_cuda():
-    return False
     return torch.cuda.is_available()
 
 
 g_n = 30
-g_p = 32
+g_p = 8
 #g_size = 5  # how many batches
-iteration_num = 2
-l_rate = 0.005
+iteration_num = 4
+l_rate = 0.01
 eps = 2000
-bt_size = 8
+bt_size = 6
 
 import torch.optim as optim
 
-# torch.cuda.set_device(0)
+torch.cuda.set_device(0)
 net = graph_embedding_Net(g_p)
 if check_cuda():
     net.cuda()
