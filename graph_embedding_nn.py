@@ -214,6 +214,7 @@ def train(net, Mu, eps, _lr, iteration_num, bt_size, dp):
             t_data, E, adj_G, adj_F, W, t_label, N = dp.get_data()
             #E = net.get_Var( gen_E(g_n) )[0]
             output = net(E, [], W, adj_F, adj_G, iteration_num, t_data, N[0], bt_size).view(bt_size, -1)
+            print(output)
             if check_cuda():
                 target = Variable(torch.from_numpy(t_label).cuda()).view(bt_size).long()
             else:
@@ -235,12 +236,12 @@ def check_cuda():
 
 
 g_n = 30
-g_p = 8
+g_p = 16
 #g_size = 5  # how many batches
-iteration_num = 4
+iteration_num = 3
 l_rate = 0.01
 eps = 2000
-bt_size = 6
+bt_size = 4
 
 import torch.optim as optim
 

@@ -10,7 +10,7 @@ def tsp_lp_initializer(graph):
                    vtype=grb.GRB.CONTINUOUS, name='edgevars')
 
     for n in nx.nodes(graph):
-        lp.addConstr(x.sum(n, '*')+x.sum('*', n), grb.GRB.EQUAL, 2)
+        lp.addConstr(x.sum(n, '*')+x.sum('*', n), grb.GRB.EQUAL, 2, name=str(n))
 
     x = grb.tupledict({index: x[index].VarName for index in x.keys()})
 

@@ -6,7 +6,8 @@ import os
 
 #indexes = [50, 55, 60, 65, 70, 75]
 #indexes = [80, 85, 90, 95]
-indexes = [100, 105, 110]
+#indexes = [100, 105, 110]
+indexes = [80]
 files = os.listdir("./RANLIB")
 for file in files:
     for index in indexes:
@@ -21,6 +22,6 @@ for file in files:
             soln, num_branch_nodes = bnb.solve(draw=False)
             t = time.clock() - a
 
-            with open("./RESULTS_SB", 'a') as f:
+            with open("./RESULTS_TEST", 'a') as f:
                 f.write(file + ", " + str(t) + ", " + str(num_branch_nodes) + "\n")
                 f.close()

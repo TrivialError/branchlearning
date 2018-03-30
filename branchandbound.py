@@ -8,12 +8,15 @@ import random
 import TSPfunctions
 import trained_model_interface
 from SBScoresData import *
+import nxtools
+import matplotlib.pyplot
 
 
 # lp_initializer should generate a gurobi model and variable {index: names} in a tupledict given a graph
 # branch_rule functions should take in the graph and an assignment to the variables and a gurobi model
 #   and return a variable (index, name) to branch on
-# branch_rule is one of "strong", "learned", "strongdata", "random" corresponding to the branch rule that will be used
+# branch_rule is one of "strong", "learned", "strongdata", "random", "objective", "fractional"
+#  corresponding to the branch rule that will be used
 # items in queue have format (LPvalue, queue#, {varindex: (varname, varvalue) tupledict for branches},
 #                                              {varindex: (varname, varvalue) tupledict for LP solution},
 #                                              [cutting_plane gurobi constraints])
@@ -33,6 +36,10 @@ class BranchAndBound:
             self.branch_rule = self.basic_branch
         elif branch_rule == "random":
             self.branch_rule = self.random_branch
+        elif branch_rule == "objective":
+            self.branch_rule = self.objective_branch
+        elif branch_rule == "fractional":
+            self.branch_rule = self.fractional_branch
         self.lp, self.var_dict = lp_initializer(graph)
         self.lp.params.outputflag = 0
         self.graph = graph
@@ -224,8 +231,9 @@ class BranchAndBound:
             lp_soln = nx.to_numpy_matrix(self.graph, weight='solution')
             soln_adj_mat = lp_soln.copy()
             soln_adj_mat[soln_adj_mat > 0] = 1
-            adj_mat = nx.to_numpy_matrix(self.graph, weight='')
-            weight_mat = nx.to_numpy_matrix(self.graph, weight='weight')
+            neighbor_graph = nxtools.k_nearest_neighbor_graph(10, self.graph)
+            adj_mat = nx.to_numpy_matrix(neighbor_graph, weight='')
+            weight_mat = nx.to_numpy_matrix(neighbor_graph, weight='weight')
             var_sb_label_dict = {var[0]: sb_label for sb_label, var in sb_scores_labels}
             data = SBScoresData(self.tsp_instance, len(self.graph), lp_soln, soln_adj_mat,
                                 adj_mat, weight_mat, var_sb_label_dict)
@@ -244,6 +252,17 @@ class BranchAndBound:
     def random_branch(model, graph, soln_value):
         return random.choice([(index, soln_value[1][index][0]) for index in soln_value[1].keys()
                               if 0 < soln_value[1][index][1] < 1])
+
+    def objective_branch(self, model, graph, soln_value):
+        max_obj_var = max(((index, soln_value[1][index][0]) for index in soln_value[1].keys()
+                          if 0 < soln_value[1][index][1] < 1), key=lambda x: self.graph[x[0][0]][x[0][1]]['weight'])
+        return max_obj_var
+
+    @staticmethod
+    def fractional_branch(model, graph, soln_value):
+        most_frac_var = max(((index, soln_value[1][index][0]) for index in soln_value[1].keys()
+                            if 0 < soln_value[1][index][1] < 1), key=lambda x: -abs(soln_value[1][x[0]][1] - 0.5))
+        return most_frac_var
 
     def learned_branch(self, model, graph, soln_value):
         lp_solution_values = {index: var[1] for index, var in soln_value[1].items()}

@@ -33,3 +33,14 @@ def save_complete_random_euclidean_graph(n, field_size=1000, filename=str(uuid.u
     for i in range(n):
         f.write(str(i) + " " + str(random.randint(0, field_size)) + " " + str(random.randint(0, field_size)) + '\n')
     f.close()
+
+
+def k_nearest_neighbor_graph(k, graph):
+    neighbor_graph = nx.Graph()
+    neighbor_graph.add_nodes_from(graph.nodes(data=True))
+    for n in graph.nodes():
+        edges = [(n, n2, graph[n][n2]) for n2 in graph[n].keys()]
+        edges.sort(key=lambda x: x[2]['weight'])
+        edges = edges[0:k]
+        neighbor_graph.add_edges_from(edges)
+    return neighbor_graph
