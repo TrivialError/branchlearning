@@ -28,6 +28,13 @@ def test(E, W, adj_F, adj_G, iteration_num, t_data, Num_node, bt_size, test_mode
 #iteration_num: the value of T
 #Num_node: the number of node of the instance
 #bt_size : the length of t_data
+#####
+#
+#If called outside, 
+#   from neural_networks import graph_embedding_Net
+#   from neural_networks import test_Net
+# should be called at first
+####
 def load_model_predict(model_name, t_data, E, adj_G, adj_F, W, iteration_num, Num_node, bt_size):
     model = load_model(model_name)
     test_model = modify_model(model)
