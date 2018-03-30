@@ -13,6 +13,8 @@ class DataProcessor:
         self.epoch = 0
         self.batch_size = batch_size
         self.num_batches = 0
+        self.count0 = 0
+        self.count1 = 0
 
         for file in self.files:
             with gzip.open('./Data/' + file) as f:
@@ -30,9 +32,12 @@ class DataProcessor:
             self.current_epoch_data.put(d)
             self.num_batches += len(d.var_sb_label_dict) // self.batch_size
 
+        print("num_batches: ", self.num_batches)
+
     def get_data(self):
 
         while self.active_data is None or self.active_data.qsize() < self.batch_size:
+            self.active_data = queue.Queue()
             if self.current_epoch_data.empty():
                 self.epoch += 1
                 random.shuffle(self.data)
@@ -68,6 +73,14 @@ class DataProcessor:
             soln_adj_mat_a[i] = np.array(self.current_soln_adj_mat)
             weight_mat_a[i] = np.array(self.current_weight_mat)
             labels[i] = edge_label[1]
+            if edge_label[1] == 0:
+                self.count0 += 1
+            else:
+                self.count1 += 1
+
+        print("zeros: ", self.count0)
+        print("ones: ", self.count1)
+        print("labels: ", labels)
 
         return (np.array(edges), lp_soln_a.astype(int), adj_mat_a.astype(int),
                 soln_adj_mat_a.astype(int), weight_mat_a.astype(int), np.array(labels), N)
