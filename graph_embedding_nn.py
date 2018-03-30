@@ -136,9 +136,9 @@ class graph_embedding_Net(torch.nn.Module):
     def get_Var(self, ary):
         if type(ary) is not Variable:
             if check_cuda():
-                return Variable(torch.from_numpy(ary).cuda())
+                return Variable(torch.Tensor(ary).cuda())
             else:
-                return Variable(torch.from_numpy(ary))
+                return Variable(torch.Tensor(ary))
         return ary
 
     # Get all paras' Variable representation
@@ -211,7 +211,8 @@ def train(net, Mu, eps, _lr, iteration_num, bt_size, dp):
         for j in range(num):
             optimizer.zero_grad()
             # get batch data
-            t_data, E, W, adj_G, adj_F, t_label, N = dp.get_data()
+            t_data, E, adj_G, adj_F, W, t_label, N = dp.get_data()
+            #E = net.get_Var( gen_E(g_n) )[0]
             output = net(E, [], W, adj_F, adj_G, iteration_num, t_data, N[0], bt_size).view(bt_size, -1)
             if check_cuda():
                 target = Variable(torch.from_numpy(t_label).cuda()).view(bt_size).long()
@@ -223,21 +224,22 @@ def train(net, Mu, eps, _lr, iteration_num, bt_size, dp):
             optimizer.step()
             running_loss += loss.data[0]
             print(loss.data[0])
-            if j % g_size == g_size - 1:
-                print('[%d, %5d] loss: %.5f' % (i + 1, j + 1, running_loss / g_size))
+            if j % num == num - 1:
+                print('[%d, %5d] loss: %.5f' % (i + 1, j + 1, running_loss / num))
                 running_loss = 0.0
     print('Finished Training')
 
 
 def check_cuda():
+    return False
     return torch.cuda.is_available()
 
 
 g_n = 30
 g_p = 32
-g_size = 5  # how many batches
-iteration_num = 1
-l_rate = 0.01
+#g_size = 5  # how many batches
+iteration_num = 2
+l_rate = 0.005
 eps = 2000
 bt_size = 8
 
