@@ -15,7 +15,7 @@ def main():
     else:
         graph = nxtools.complete_random_euclidean_graph(80, 10000)
 
-    bnb = BranchAndBound(tsp_instance, "fractional", TSPfunctions.tsp_lp_initializer, graph,
+    bnb = BranchAndBound(tsp_instance, "learned", TSPfunctions.tsp_lp_initializer, graph,
                          TSPfunctions.tsp_connecting_cutting_planes, (soln_value, {}))
 
     soln, num_branch_nodes = bnb.solve(draw=False)

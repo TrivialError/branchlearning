@@ -10,6 +10,9 @@ import trained_model_interface
 from SBScoresData import *
 import nxtools
 import matplotlib.pyplot
+import load_model_do_branching
+from neural_networks import graph_embedding_Net
+from neural_networks import test_Net
 
 
 # lp_initializer should generate a gurobi model and variable {index: names} in a tupledict given a graph
@@ -40,6 +43,8 @@ class BranchAndBound:
             self.branch_rule = self.objective_branch
         elif branch_rule == "fractional":
             self.branch_rule = self.fractional_branch
+        elif branch_rule == "learned":
+            self.branch_rule = self.learned_branch
         self.lp, self.var_dict = lp_initializer(graph)
         self.lp.params.outputflag = 0
         self.graph = graph
@@ -270,10 +275,14 @@ class BranchAndBound:
         lp_soln = nx.to_numpy_matrix(self.graph, weight='solution')
         soln_adj_mat = lp_soln.copy()
         soln_adj_mat[soln_adj_mat > 0] = 1
-        adj_mat = nx.to_numpy_matrix(self.graph, weight='')
-        weight_mat = nx.to_numpy_matrix(self.graph, weight='weight')
-        data = SBScoresData(self.tsp_instance, len(self.graph), lp_soln, soln_adj_mat,
-                            adj_mat, weight_mat, {}, train=False)
-        branch_var_labels = trained_model_interface.get_branch_var_labels(data)
+        neighbor_graph = nxtools.k_nearest_neighbor_graph(10, self.graph)
+        adj_mat = nx.to_numpy_matrix(neighbor_graph, weight='')
+        weight_mat = nx.to_numpy_matrix(neighbor_graph, weight='weight')
+        edges = self.graph.edges()
+        branch_var_labels =\
+            load_model_do_branching.load_model_predict("", edges, lp_soln, adj_mat, soln_adj_mat,
+                                                       weight_mat, 3, self.graph.number_of_nodes, len(edges))
+        print(branch_var_labels)
+        exit()
         branch_var = max(branch_var_labels, key=lambda bvl: bvl[1])[0]
         return branch_var, self.var_dict[branch_var]
