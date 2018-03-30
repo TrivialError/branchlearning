@@ -278,3 +278,7 @@ class test_Net(torch.nn.Module):
                  self.get_Var(W), \
                  self.get_Var(adj_F), \
                  self.get_Var(adj_G)
+
+def check_cuda():
+    #return False
+    return torch.cuda.is_available()
