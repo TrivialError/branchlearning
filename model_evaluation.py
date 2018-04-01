@@ -8,6 +8,7 @@ def gen_precision(pre_labels, orig_labels):
     count_ins = len(pre_labels)
     for i in range(count_ins):
         count_cand = len(pre_labels[i])
+        #print (len(orig_labels[i]), len(pre_labels[i]) )
         for j in range(count_cand):
             if int( pre_labels[i][j] ) == 1:
                 if int( pre_labels[i][j] == orig_labels[i][j] ):
