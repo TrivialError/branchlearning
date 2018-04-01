@@ -9,14 +9,10 @@ def test_on_model_dir(model_name, dir):
 
     all_data_labels = []
     all_pred_labels = []
-    count = 0
     for file in os.listdir(dir):
-        count = count +1
         data_labels, pred_labels = test_on_model(model_name, file, dir)
         all_data_labels.append(data_labels)
         all_pred_labels.append(pred_labels)
-        if count > 2:
-            break
 
     return all_data_labels, all_pred_labels
 
