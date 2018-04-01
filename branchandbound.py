@@ -263,14 +263,20 @@ class BranchAndBound:
         return random.choice(vars)
 
     def objective_branch(self, model, graph, soln_value):
-        max_obj_var = max(((index, soln_value[1][index][0]) for index in soln_value[1].keys()
-                          if 0 < soln_value[1][index][1] < 1), key=lambda x: self.graph[x[0][0]][x[0][1]]['weight'])
+        vars = [(index, soln_value[1][index][0]) for index in soln_value[1].keys()
+                if 0 < soln_value[1][index][1] < 1]
+        if not vars:
+            return None
+        max_obj_var = max(vars, key=lambda x: self.graph[x[0][0]][x[0][1]]['weight'])
         return max_obj_var
 
     @staticmethod
     def fractional_branch(model, graph, soln_value):
-        most_frac_var = max(((index, soln_value[1][index][0]) for index in soln_value[1].keys()
-                            if 0 < soln_value[1][index][1] < 1), key=lambda x: -abs(soln_value[1][x[0]][1] - 0.5))
+        vars = [(index, soln_value[1][index][0]) for index in soln_value[1].keys()
+                if 0 < soln_value[1][index][1] < 1]
+        if not vars:
+            return None
+        most_frac_var = max(vars, key=lambda x: -abs(soln_value[1][x[0]][1] - 0.5))
         return most_frac_var
 
     def learned_branch(self, model, graph, soln_value):
