@@ -42,9 +42,10 @@ def test_on_model(model_name, data_file, dir):
         load_model_do_branching.load_model_predict(model_name, edges, lp_soln, adj_mat, soln_adj_mat,
                                                    weight_mat, 3, n, len(edges))
 
+    predicted_class = predicted_class.data.cpu().numpy()
     predicted_class.sort()
     max_val = predicted_class[-1]
     min_val = predicted_class[0]
-    predicted_labels = [1  for val in predicted_class if val >= max_val - 0.2*(max_val-min_val)]
+    predicted_labels = [1 for val in predicted_class if val >= max_val - 0.2*(max_val-min_val)]
 
     return data_labels, predicted_labels
