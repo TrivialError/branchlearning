@@ -5,8 +5,21 @@ import numpy as np
 import load_model_do_branching
 
 
-def test_on_model(model_name, data_file):
-    with gzip.open("./DataTest/" + data_file) as f:
+def test_on_model_dir(model_name, dir):
+
+    all_data_labels = []
+    all_pred_labels = []
+
+    for file in os.listdir(dir):
+        data_labels, pred_labels = test_on_model(model_name, file, dir)
+        all_data_labels.append(data_labels)
+        all_pred_labels.append(pred_labels)
+
+    return all_data_labels, all_pred_labels
+
+
+def test_on_model(model_name, data_file, dir):
+    with gzip.open(dir + data_file) as f:
         data = _pickle.load(f)
 
     n = data.n
