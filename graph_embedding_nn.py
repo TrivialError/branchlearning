@@ -211,7 +211,8 @@ def train(_net, Mu, eps, _lr, iteration_num, bt_size, dp):
         return
     eps_list = [i + crt_eps + 1 for i in range(eps - crt_eps) ]
 
-    optimizer = optim.SGD(net.parameters(), lr=_lr)
+    lr = _lr
+    optimizer = optim.Adam(net.parameters(), lr=lr)
     criterion = torch.nn.CrossEntropyLoss()
     running_loss = 0.0
     num = dp.num_batches
@@ -239,6 +240,9 @@ def train(_net, Mu, eps, _lr, iteration_num, bt_size, dp):
         if i % save_interval == 0:
             model_name = dir_saved_model + model_pre + str(i)
             torch.save(net, model_name)
+            print("learning rate: ", lr)
+        lr = 0.995*lr
+        optimizer = optim.Adam(net.parameters(), lr=lr)
     #save model when training finishes
     model_name = dir_saved_model + model_pre + str(eps)
     torch.save(net, model_name)
@@ -261,10 +265,10 @@ def load_model():
 
 
 g_n = 30
-g_p = 8
+g_p = 25
 #g_size = 5  # how many batches
-iteration_num = 1
-l_rate = 0.01
+iteration_num = 3
+l_rate = 0.001
 eps = 2000
 bt_size = 6
 dir_saved_model = './models/'

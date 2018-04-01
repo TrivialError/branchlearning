@@ -287,11 +287,9 @@ class BranchAndBound:
         adj_mat[0] = nx.to_numpy_matrix(neighbor_graph, weight='')
         weight_mat[0] = nx.to_numpy_matrix(neighbor_graph, weight='weight')
         frac_edges = [index for index, var in soln_value[1].items() if 0 < var[1] < 1]
-        print(len(frac_edges))
-        branch_var_labels =\
+        labels =\
             load_model_do_branching.load_model_predict("", frac_edges, lp_soln, adj_mat, soln_adj_mat,
                                                        weight_mat, 3, n, len(frac_edges))
-        print(branch_var_labels)
-        exit()
-        branch_var = max(branch_var_labels, key=lambda bvl: bvl[1])[0]
+        ind = np.argmax(labels.data.cpu().numpy())
+        branch_var = frac_edges[ind]
         return branch_var, self.var_dict[branch_var]
