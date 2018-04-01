@@ -6,7 +6,7 @@ import numpy as np
 def gen_precision(pre_labels, orig_labels):
     tp, fp = 0, 0
     count_ins = len(pre_labels)
-    for i in range(count):
+    for i in range(count_ins):
         count_cand = len(pre_labels[i])
         for j in range(count_cand):
             if int( pre_labels[i][j] ) == 1:
@@ -20,7 +20,7 @@ def gen_precision(pre_labels, orig_labels):
 def gen_recall(pre_labels, orig_labels):
     tp, fn = 0, 0
     count_ins = len(pre_labels)
-    for i in range(count):
+    for i in range(count_ins):
         count_cand = len(pre_labels[i])
         for j in range(count_cand):
             if int( orig_labels[i][j] ) == 1:

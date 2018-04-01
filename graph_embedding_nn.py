@@ -2,6 +2,7 @@ import random
 import torch
 import numpy as np
 from torch.autograd import Variable
+from check_cuda import *
 
 
 class graph_embedding_Net(torch.nn.Module):
@@ -249,9 +250,6 @@ def train(_net, Mu, eps, _lr, iteration_num, bt_size, dp):
     print('Finished Training')
 
 
-def check_cuda():
-    #return False
-    return torch.cuda.is_available()
 
 def load_model():
     from os import listdir
