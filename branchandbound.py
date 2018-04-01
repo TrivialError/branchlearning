@@ -256,8 +256,11 @@ class BranchAndBound:
 
     @staticmethod
     def random_branch(model, graph, soln_value):
-        return random.choice([(index, soln_value[1][index][0]) for index in soln_value[1].keys()
-                              if 0 < soln_value[1][index][1] < 1])
+        vars = [(index, soln_value[1][index][0]) for index in soln_value[1].keys()
+                if 0 < soln_value[1][index][1] < 1]
+        if not vars:
+            return None
+        return random.choice(vars)
 
     def objective_branch(self, model, graph, soln_value):
         max_obj_var = max(((index, soln_value[1][index][0]) for index in soln_value[1].keys()

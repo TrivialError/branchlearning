@@ -12,13 +12,13 @@ for file in files:
             filename = './RANLIBTEST/' + file
             graph, soln_value = TSPImport.produce_final(filename)
 
-            bnb = BranchAndBound(file[0:-4], "objective", TSPfunctions.tsp_lp_initializer, graph,
+            bnb = BranchAndBound(file[0:-4], "random", TSPfunctions.tsp_lp_initializer, graph,
                                  TSPfunctions.tsp_connecting_cutting_planes, (soln_value, {}))
 
             a = time.clock()
             soln, num_branch_nodes = bnb.solve(draw=False)
             t = time.clock() - a
 
-            with open("./RESULTS_OBJECTIVE", 'a') as f:
+            with open("./RESULTS_RANDOM", 'a') as f:
                 f.write(file + ", " + str(t) + ", " + str(num_branch_nodes) + "\n")
                 f.close()
