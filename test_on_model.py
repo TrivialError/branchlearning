@@ -49,6 +49,6 @@ def test_on_model(model_name, data_file, dir):
     predicted_class.sort()
     max_val = predicted_class[-1]
     min_val = predicted_class[0]
-    predicted_labels = [1 for val in predicted_class if val >= max_val - 0.2*(max_val-min_val)]
+    predicted_labels = [1 if val >= max_val - 0.2*(max_val-min_val) else 0 for val in predicted_class]
 
     return data_labels, predicted_labels
