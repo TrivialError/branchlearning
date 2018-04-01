@@ -2,6 +2,7 @@ import random
 import torch
 import numpy as np
 from torch.autograd import Variable
+from check_cuda import *
 
 class graph_embedding_Net(torch.nn.Module):
     #p: the length of vertice representation
@@ -286,6 +287,3 @@ class test_Net(torch.nn.Module):
                  self.get_Var(adj_F), \
                  self.get_Var(adj_G)
 
-def check_cuda():
-    #return False
-    return torch.cuda.is_available()

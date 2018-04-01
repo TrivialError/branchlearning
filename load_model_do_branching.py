@@ -2,6 +2,7 @@ import torch
 from neural_networks import test_Net
 from neural_networks import graph_embedding_Net
 import os
+from check_cuda import *
 
 def load_model(model_name):
     return torch.load(model_name)
@@ -47,7 +48,7 @@ def load_model_predict(model_name, t_data, E, adj_G, adj_F, W, iteration_num, Nu
         model = load_model(model_most_recent)
     else:
         model = load_model(model_name)
-    if torch.cuda.is_available():
+    if check_cuda():
         test_model = modify_model(model).cuda()
     else:
         test_model = modify_model(model)

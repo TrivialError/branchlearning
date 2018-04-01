@@ -3,5 +3,3 @@ gurobi.log
 __pycache__
 test.py
 *.pyc
-models/*
-./models/*
