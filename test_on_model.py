@@ -42,9 +42,11 @@ def test_on_model(model_name, data_file, dir):
                                                    weight_mat, 3, n, len(edges))
 
     predicted_class = predicted_class.data.cpu().numpy()
-    predicted_class.sort()
-    max_val = predicted_class[-1]
-    min_val = predicted_class[0]
-    predicted_labels = [1 if val >= max_val - 0.2*(max_val-min_val) else 0 for val in predicted_class]
+
+    num_ones = sum(data_labels)
+
+    ind = np.argpartition(predicted_class, -num_ones)[-num_ones:]
+
+    predicted_labels = [1 if i in ind else 0 for i in range(len(predicted_class))]
 
     return data_labels, predicted_labels
