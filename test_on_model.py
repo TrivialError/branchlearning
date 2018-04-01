@@ -19,7 +19,7 @@ def test_on_model_dir(model_name, dir):
 
 
 def test_on_model(model_name, data_file, dir):
-    with gzip.open(dir + data_file) as f:
+    with gzip.open(dir + '/' + data_file) as f:
         data = _pickle.load(f)
 
     n = data.n
