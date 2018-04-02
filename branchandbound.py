@@ -297,7 +297,7 @@ class BranchAndBound:
         weight_mat[0] = nx.to_numpy_matrix(neighbor_graph, weight='weight')
         frac_edges = [index for index, var in soln_value[1].items() if 0 < var[1] < 1]
         if not frac_edges:
-            return False
+            return None
         labels =\
             load_model_do_branching.load_model_predict("", frac_edges, lp_soln, adj_mat, soln_adj_mat,
                                                        weight_mat, 3, n, len(frac_edges))

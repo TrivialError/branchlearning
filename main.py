@@ -8,7 +8,7 @@ from branchandbound import *
 def main():
 
     a = time.clock()
-    tsp_instance = "random100-03"
+    tsp_instance = "random50-03"
     soln_value = math.inf
     if tsp_instance is not "random":
         graph, soln_value = TSPImport.produce_final("./RANLIBTEST/" + tsp_instance + ".tsp")
