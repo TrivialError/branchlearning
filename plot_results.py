@@ -59,12 +59,14 @@ def plot_results(filename):
     return res_runtime, res_nodes
     #geo_mean = a.prod()**(1.0/len(a))
     
-def plot(SB_runtime, SB_nodes, Random_runtime, Random_nodes, Objective_runtime, Objective_nodes, Fractional_runtime, Fractional_nodes):  
+def plot(SB_runtime, SB_nodes, Random_runtime, Random_nodes, Objective_runtime, Objective_nodes, Fractional_runtime, Fractional_nodes, LB_runtime, LB_nodes):
     plt.figure(1)    
     plt.plot([row[0] for row in SB_runtime], [row[1] for row in SB_runtime], color='red', label='Strong Branching')
     plt.plot([row[0] for row in Random_runtime], [row[1] for row in Random_runtime], color='blue', label='Random Branching')
     plt.plot([row[0] for row in Objective_runtime], [row[1] for row in Objective_runtime], color='green', label='Objective Branching')
     plt.plot([row[0] for row in Fractional_runtime], [row[1] for row in Fractional_runtime], color='purple', label='Fractional Branching')
+    plt.plot([row[0] for row in LB_runtime], [row[1] for row in LB_runtime], color='black',
+             label='Learned Branching')
     #plt.scatter([row[0] for row in LB_runtime], [row[1] for row in LB_runtime], color='black')
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15),  ncol=5)
     plt.xlabel("Number of Nodes")
@@ -76,6 +78,7 @@ def plot(SB_runtime, SB_nodes, Random_runtime, Random_nodes, Objective_runtime, 
     plt.plot([row[0] for row in Random_nodes], [row[1] for row in Random_nodes], color='blue', label='Random Branching')
     plt.plot([row[0] for row in Objective_nodes], [row[1] for row in Objective_nodes], color='green', label='Objective Branching')
     plt.plot([row[0] for row in Fractional_nodes], [row[1] for row in Fractional_nodes], color='purple', label='Fractional Branching')
+    plt.plot([row[0] for row in LB_nodes], [row[1] for row in LB_nodes], color='black', label='Learned Branching')
     #plt.scatter([row[0] for row in LB_runtime], [row[1] for row in LB_runtime], color='black')
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=5)
     plt.yscale('log')
@@ -93,8 +96,8 @@ def plot(SB_runtime, SB_nodes, Random_runtime, Random_nodes, Objective_runtime, 
 
 if __name__ == '__main__':
     SB_results_runtime, SB_results_nodes  = plot_results("RESULTS_SB")
-    #LB_results_runtime, LB_results_nodes  = plot_results("RESULTS_LB")
+    LB_results_runtime, LB_results_nodes  = plot_results("RESULTS_LEARNED")
     Random_results_runtime, Random_results_nodes  = plot_results("RESULTS_RANDOM")
     Objective_results_runtime, Objective_results_nodes  = plot_results("RESULTS_OBJECTIVE")
     Fractional_results_runtime, Fractional_results_nodes  = plot_results("RESULTS_FRACTIONAL")
-    plot(SB_results_runtime, SB_results_nodes, Random_results_runtime, Random_results_nodes, Objective_results_runtime, Objective_results_nodes, Fractional_results_runtime, Fractional_results_nodes)
+    plot(SB_results_runtime, SB_results_nodes, Random_results_runtime, Random_results_nodes, Objective_results_runtime, Objective_results_nodes, Fractional_results_runtime, Fractional_results_nodes, LB_results_runtime, LB_results_nodes)
