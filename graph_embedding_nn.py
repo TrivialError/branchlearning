@@ -233,15 +233,15 @@ def train(_net, Mu, eps, _lr, iteration_num, bt_size, dp):
             loss.backward()
             optimizer.step()
             running_loss += loss.data[0]
-            print(loss.data[0])
+            #print(loss.data[0])
             if j % num == num - 1:
-                print('[%d, %5d] loss: %.5f' % (i + 1, j + 1, running_loss / num))
+                print('%.5f' % (running_loss / num))
                 running_loss = 0.0
         #add save and reload supoprt
         if i % save_interval == 0:
             model_name = dir_saved_model + model_pre + str(i)
             torch.save(net, model_name)
-            print("learning rate: ", lr)
+            #print("learning rate: ", lr)
         lr = 0.995*lr
         optimizer = optim.Adam(net.parameters(), lr=lr)
     #save model when training finishes
@@ -266,10 +266,10 @@ g_n = 30
 g_p = 25
 #g_size = 5  # how many batches
 iteration_num = 3
-l_rate = 0.001
+l_rate = 0.0001
 eps = 2000
 bt_size = 6
-dir_saved_model = './models/'
+dir_saved_model = './models_other/'
 model_pre = 'graph_embedding_nn_no_'
 save_interval = 1
 
