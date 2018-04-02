@@ -3,3 +3,4 @@ gurobi.log
 __pycache__
 test.py
 *.pyc
+.DS_Store

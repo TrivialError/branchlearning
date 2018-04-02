@@ -11,11 +11,11 @@ def main():
     tsp_instance = "random100-03"
     soln_value = math.inf
     if tsp_instance is not "random":
-        graph, soln_value = TSPImport.produce_final("./RANLIB/" + tsp_instance + ".tsp")
+        graph, soln_value = TSPImport.produce_final("./RANLIBTEST/" + tsp_instance + ".tsp")
     else:
         graph = nxtools.complete_random_euclidean_graph(80, 10000)
 
-    bnb = BranchAndBound(tsp_instance, "random", TSPfunctions.tsp_lp_initializer, graph,
+    bnb = BranchAndBound(tsp_instance, "learned", TSPfunctions.tsp_lp_initializer, graph,
                          TSPfunctions.tsp_connecting_cutting_planes, (soln_value, {}))
 
     soln, num_branch_nodes = bnb.solve(draw=False)

@@ -19,6 +19,6 @@ for file in files:
             soln, num_branch_nodes = bnb.solve(draw=False)
             t = time.clock() - a
 
-            with open("./RESULTS_OBJECTIVE", 'a') as f:
+            with open("./RESULTS_LEARNED", 'a') as f:
                 f.write(file + ", " + str(t) + ", " + str(num_branch_nodes) + "\n")
                 f.close()

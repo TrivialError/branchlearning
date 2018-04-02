@@ -299,6 +299,7 @@ class BranchAndBound:
         labels =\
             load_model_do_branching.load_model_predict("", frac_edges, lp_soln, adj_mat, soln_adj_mat,
                                                        weight_mat, 3, n, len(frac_edges))
-        ind = np.argmax(labels.data.cpu().numpy())
-        branch_var = frac_edges[ind]
+        labels = labels.data.cpu().numpy()
+        ind = np.argpartition(labels, -min(round(len(labels)/10), 1))[-min(round(len(labels)/10), 1):]
+        branch_var = frac_edges[random.choice(ind)]
         return branch_var, self.var_dict[branch_var]
